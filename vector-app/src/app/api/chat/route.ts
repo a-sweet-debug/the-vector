@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import { getDbPool, initDb } from "@/lib/db";
 
 const SYSTEM_PROMPT = `You are Prism, the Lead Architect AI agent at Vector AI Command Center. You are intelligent, strategic, and articulate.
 
@@ -48,8 +49,16 @@ For "plan" mode, generate 4 documents (one from each agent) and 4-8 tasks distri
 
 IMPORTANT: Always respond with ONLY valid JSON. No markdown code fences. No extra text outside the JSON.`;
 
+// Ensure DB is initialized
+let dbInitialized = false;
+
 export async function POST(req: Request) {
   try {
+    if (!dbInitialized) {
+      await initDb();
+      dbInitialized = true;
+    }
+
     const { message, history } = await req.json();
 
     if (!message) {
@@ -101,6 +110,30 @@ export async function POST(req: Request) {
     parsed.message = parsed.message || "";
     parsed.documents = parsed.documents || [];
     parsed.tasks = parsed.tasks || [];
+
+    // --- INSFORGE DATABASE INTEGRATION ---
+    if (parsed.mode === "plan" && parsed.documents.length > 0) {
+      try {
+        const pool = getDbPool();
+        if (pool) {
+          const title = message.length > 50 ? message.substring(0, 47) + "..." : message;
+          const atlasDoc = parsed.documents.find((d: any) => d.agent === 'Atlas')?.content || '';
+          const nexusDoc = parsed.documents.find((d: any) => d.agent === 'Nexus')?.content || '';
+          const vanguardDoc = parsed.documents.find((d: any) => d.agent === 'Vanguard')?.content || '';
+          const ledgerDoc = parsed.documents.find((d: any) => d.agent === 'Ledger')?.content || '';
+
+          await pool.query(
+            `INSERT INTO projects (title, description, summary_markdown, architecture_markdown, marketing_markdown, finance_markdown)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [title, message, atlasDoc, nexusDoc, vanguardDoc, ledgerDoc]
+          );
+          console.log("✅ Project successfully saved to InsForge DB");
+        }
+      } catch (dbError) {
+        console.error("❌ Failed to save project to InsForge DB:", dbError);
+        // We do not throw here! The user should still get their UI response even if DB fails.
+      }
+    }
 
     return NextResponse.json(parsed);
   } catch (error: any) {

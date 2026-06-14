@@ -158,12 +158,25 @@ export default function ProjectsPage() {
   useEffect(() => {
     async function fetchConversations() {
       try {
-        const res = await fetch('/api/conversations');
+        const res = await fetch('/api/projects');
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
-        setConversations(data.conversations || []);
-      } catch {
-        // Silently handle — seed projects will show
+        
+        // Map InsForge DB projects to the UI format
+        const dbProjects = (data.projects || []).map((p: any) => ({
+          conversation_id: `db-${p.id}`,
+          title: p.title || "Generated Plan",
+          created_at: p.created_at,
+          messages: [
+            { role: "user", content: p.description },
+            { role: "assistant", content: p.summary_markdown || "Project details..." }
+          ],
+          documents_count: 4,
+        }));
+        
+        setConversations(dbProjects);
+      } catch (err) {
+        console.error("Error fetching InsForge projects:", err);
       } finally {
         setLoading(false);
       }
