@@ -399,10 +399,7 @@ export default function StrategyPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="bg-surface-container/50 border border-outline-variant/50 text-on-surface px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-surface-container hover:border-outline-variant transition-all flex items-center gap-2">
-            <Share2 className="w-4 h-4" />
-            Share
-          </button>
+
           <button onClick={handleExportPDF} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center gap-2 active:scale-[0.98] print:hidden">
             <Download className="w-4 h-4" />
             Export PDF
