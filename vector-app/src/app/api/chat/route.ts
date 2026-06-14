@@ -159,12 +159,16 @@ export async function POST(req: Request) {
           const vanguardDoc = parsed.documents.find((d: any) => d.agent === 'Vanguard')?.content || '';
           const ledgerDoc = parsed.documents.find((d: any) => d.agent === 'Ledger')?.content || '';
 
-          await pool.query(
+          const dbResult = await pool.query(
             `INSERT INTO projects (title, description, summary_markdown, architecture_markdown, marketing_markdown, finance_markdown)
-             VALUES ($1, $2, $3, $4, $5, $6)`,
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
             [title, message, atlasDoc, nexusDoc, vanguardDoc, ledgerDoc]
           );
-          console.log("✅ Project successfully saved to InsForge DB");
+          
+          if (dbResult.rows.length > 0) {
+            parsed.conversation_id = `db-${dbResult.rows[0].id}`;
+            console.log("✅ Project successfully saved to InsForge DB with ID:", parsed.conversation_id);
+          }
         }
       } catch (dbError) {
         console.error("❌ Failed to save project to InsForge DB:", dbError);

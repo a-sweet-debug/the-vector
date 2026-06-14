@@ -267,6 +267,13 @@ export function BoardRoomClient() {
       const data = await res.json();
 
       if (data.mode === "plan") {
+        // Handle InsForge DB Project ID
+        if (data.conversation_id) {
+          setConversationId(data.conversation_id);
+          localStorage.setItem('active_conversation_id', data.conversation_id);
+          fetchConversations(); // Update sidebar with new project
+        }
+
         // Planning mode — animate agent delegation
         addTelemetry(`[Prism] Planning mode activated. Delegating to Executive Council...`);
         
@@ -291,7 +298,7 @@ export function BoardRoomClient() {
               content: doc.content,
               status: "completed",
               agent: doc.agent,
-              conversation_id: conversationId || "local",
+              conversation_id: data.conversation_id || conversationId || "local",
             }));
             setDocuments(prev => [...newDocs, ...prev]);
             setActiveRightTab("documents");

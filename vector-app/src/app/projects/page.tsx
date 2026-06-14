@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Search, Loader2, FolderOpen, MessageSquare, Clock, ExternalLink, FileText, Activity, Target, CheckCircle2 } from "lucide-react";
+import { Plus, Search, Loader2, FolderOpen, MessageSquare, Clock, ExternalLink, FileText, Activity, Target, CheckCircle2, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -116,6 +116,27 @@ export default function ProjectsPage() {
     }
     fetchConversations();
   }, []);
+
+  const handleDelete = async (e: React.MouseEvent, conversation_id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/api/projects/${conversation_id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setConversations(prev => prev.filter(c => c.conversation_id !== conversation_id));
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to delete project");
+      }
+    } catch (err) {
+      alert("Error connecting to server");
+    }
+  };
 
   const filtered = conversations.filter(
     (c) =>
@@ -319,7 +340,18 @@ export default function ProjectsPage() {
                         </p>
                       </div>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
+                    <div className="flex items-center gap-2">
+                      {parseInt(conv.conversation_id.replace('db-', '')) > 6 && (
+                        <button
+                          onClick={(e) => handleDelete(e, conv.conversation_id)}
+                          className="p-1.5 text-on-surface-variant/40 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                          title="Delete Project"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      <ExternalLink className="w-4 h-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
+                    </div>
                   </div>
 
                   <p className="text-xs text-on-surface-variant/70 line-clamp-2 leading-relaxed">

@@ -132,6 +132,24 @@ export default function ArchitecturePage() {
     return (selected.id === from || selected.id === to);
   };
 
+  const handleExportConfig = () => {
+    const configData = {
+      version: "1.0.0",
+      generatedAt: new Date().toISOString(),
+      nodes: nodes,
+      connections: connectionPaths
+    };
+    const blob = new Blob([JSON.stringify(configData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "system_architecture_config.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="px-4 md:px-8 pb-8 max-w-[1600px] mx-auto h-[calc(100vh-4rem)] flex flex-col pt-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4 flex justify-between items-end shrink-0">
@@ -143,7 +161,7 @@ export default function ArchitecturePage() {
           <button onClick={() => setSelected(null)} className="bg-surface-container/50 border border-outline-variant/50 text-on-surface px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-surface-container transition-all flex items-center gap-2">
             <RefreshCcw className="w-4 h-4" /> Reset View
           </button>
-          <button className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center gap-2 active:scale-[0.98]">
+          <button onClick={handleExportConfig} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center gap-2 active:scale-[0.98]">
             <Download className="w-4 h-4" /> Export Config
           </button>
         </div>

@@ -63,6 +63,27 @@ const billingData = [
 ];
 
 export default function FinancePage() {
+  const handleExportCSV = () => {
+    const headers = ["Service/Agent Name", "Resource", "Usage", "Cost"];
+    const rows = billingData.map(b => [
+      `"${b.name}"`, 
+      `"${b.resource}"`, 
+      `"${b.usage}"`, 
+      `"${b.cost}"`
+    ]);
+    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "vector_financial_report.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="px-6 md:px-12 pb-8 max-w-[1600px] mx-auto h-[calc(100vh-4rem)] flex flex-col pt-8">
       <motion.div
@@ -76,7 +97,7 @@ export default function FinancePage() {
             Monitor your startup&apos;s burn rate, runway, and granular LLM API costs.
           </p>
         </div>
-        <button className="bg-surface-container/50 border border-outline-variant/50 text-on-surface px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-surface-container hover:border-outline-variant transition-all flex items-center gap-2">
+        <button onClick={handleExportCSV} className="bg-surface-container/50 border border-outline-variant/50 text-on-surface px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-surface-container hover:border-outline-variant transition-all flex items-center gap-2">
           <Download className="w-4 h-4" />
           Export CSV
         </button>
