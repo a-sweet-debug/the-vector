@@ -32,11 +32,51 @@ export default function SettingsPage() {
   };
 
   const sections = [
+    { id: "knowledge", name: "Knowledge Base", icon: Shield }, // Changed icon to Shield or Database
     { id: "agent", name: "Agent Parameters", icon: Cpu },
     { id: "api", name: "API Keys & Access", icon: Key },
-    { id: "security", name: "Security & Identity", icon: Shield },
     { id: "notifications", name: "Notifications", icon: Bell },
   ];
+
+  const [uploading, setUploading] = useState(false);
+  const [files, setFiles] = useState<{id: number, filename: string, created_at: string}[]>([]);
+
+  useEffect(() => {
+    if (activeSection === "knowledge") {
+      fetch("/api/knowledge")
+        .then(res => res.json())
+        .then(data => setFiles(data.files || []))
+        .catch(console.error);
+    }
+  }, [activeSection]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/knowledge", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Success: " + data.message);
+        // Refresh files
+        fetch("/api/knowledge").then(r => r.json()).then(d => setFiles(d.files || []));
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (err) {
+      alert("Failed to upload file");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="px-4 md:px-8 lg:px-12 pb-8 max-w-[1200px] mx-auto pt-6 md:pt-8">
@@ -52,7 +92,7 @@ export default function SettingsPage() {
           System Settings
         </h2>
         <p className="text-sm text-on-surface-variant/70 max-w-2xl">
-          Configure Vector Command Center preferences, agent models, and API keys.
+          Configure Vector Command Center preferences, agent models, and InsForge Knowledge Base.
         </p>
       </motion.div>
 
@@ -81,6 +121,65 @@ export default function SettingsPage() {
 
         {/* Settings Content */}
         <div className="md:col-span-3 space-y-6">
+          
+          {/* KNOWLEDGE BASE SECTION (NEW) */}
+          {activeSection === "knowledge" && (
+            <div className="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-lowest">
+                <h3 className="text-lg font-bold text-on-surface">Agent Knowledge Base (InsForge RAG)</h3>
+                <p className="text-xs text-on-surface-variant mt-1">
+                  Upload company documents. Prism will automatically read these and use them as context before generating strategies. Powered by InsForge pgvector and Gemini.
+                </p>
+              </div>
+              
+              <div className="p-6 space-y-8">
+                {/* Upload Area */}
+                <div className="border-2 border-dashed border-outline-variant/50 rounded-xl p-8 text-center bg-surface-container-lowest hover:bg-surface-container/50 transition-colors">
+                  <input 
+                    type="file" 
+                    id="fileUpload" 
+                    className="hidden" 
+                    accept=".txt,.md,.csv" 
+                    onChange={handleFileUpload} 
+                    disabled={uploading}
+                  />
+                  <label htmlFor="fileUpload" className="cursor-pointer flex flex-col items-center">
+                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4">
+                      {uploading ? <Cpu className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
+                    </div>
+                    <span className="text-sm font-bold text-on-surface mb-1">
+                      {uploading ? "Embedding Document..." : "Click to Upload Context Document"}
+                    </span>
+                    <span className="text-xs text-on-surface-variant">Supports .txt, .md (Max 50kb)</span>
+                  </label>
+                </div>
+
+                {/* Uploaded Files List */}
+                <div>
+                  <h4 className="text-sm font-semibold text-on-surface mb-4">Embedded Documents</h4>
+                  {files.length === 0 ? (
+                    <p className="text-xs text-on-surface-variant italic">No documents embedded yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {files.map(file => (
+                        <div key={file.id} className="flex justify-between items-center p-3 rounded-lg border border-outline-variant bg-surface-container">
+                          <div className="flex items-center gap-3">
+                            <Shield className="w-4 h-4 text-emerald-500" />
+                            <span className="text-sm font-medium text-on-surface">{file.filename}</span>
+                          </div>
+                          <span className="text-[10px] text-on-surface-variant uppercase tracking-wider">
+                            Vectorized
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* AGENT SECTION */}
           {activeSection === "agent" && (
             <div className="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-lowest">
@@ -140,9 +239,9 @@ export default function SettingsPage() {
                   >
                     <option value="session">Session Only (Ephemeral)</option>
                     <option value="last10">Last 10 Interactions</option>
-                    <option value="infinite">Infinite (Vector Database)</option>
+                    <option value="infinite">Infinite (InsForge Vector Store)</option>
                   </select>
-                  <p className="text-[10px] text-on-surface-variant mt-2">Controls how much context is fetched from the MongoDB Vector Store during orchestration.</p>
+                  <p className="text-[10px] text-on-surface-variant mt-2">Controls how much context is fetched from the InsForge Vector Store during orchestration.</p>
                 </div>
               </div>
               
@@ -181,10 +280,9 @@ export default function SettingsPage() {
                     />
                     <span className="text-xs bg-emerald-500/10 text-emerald-500 px-3 py-2 rounded-lg border border-emerald-500/20 font-bold">Connected</span>
                   </div>
-                  <p className="text-[10px] text-on-surface-variant mt-2">Managed via backend environment variable. Edit <code className="bg-surface-container-highest px-1 rounded">mcp-server/.env</code> to update.</p>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-on-surface block mb-2">MongoDB URI</label>
+                  <label className="text-sm font-semibold text-on-surface block mb-2">InsForge Postgres URI</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="password"
@@ -194,27 +292,7 @@ export default function SettingsPage() {
                     />
                     <span className="text-xs bg-emerald-500/10 text-emerald-500 px-3 py-2 rounded-lg border border-emerald-500/20 font-bold">Connected</span>
                   </div>
-                  <p className="text-[10px] text-on-surface-variant mt-2">MongoDB Atlas cluster for conversation persistence and session storage.</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeSection === "security" && (
-            <div className="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-lowest">
-                <h3 className="text-lg font-bold text-on-surface">Security & Identity</h3>
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-4 p-4 bg-surface-container rounded-lg border border-outline-variant">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold">
-                    VA
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-on-surface">Vector Admin</h4>
-                    <p className="text-xs text-on-surface-variant">admin@vector-ai.com</p>
-                    <p className="text-[10px] text-emerald-500 font-medium mt-1">Role: Super Admin</p>
-                  </div>
+                  <p className="text-[10px] text-on-surface-variant mt-2">InsForge Postgres database used for conversation persistence and pgvector embeddings.</p>
                 </div>
               </div>
             </div>
@@ -229,7 +307,7 @@ export default function SettingsPage() {
                 {[
                   { label: "Agent task completion", desc: "Get notified when an orchestration completes", enabled: true },
                   { label: "System errors", desc: "Alert when backend encounters critical errors", enabled: true },
-                  { label: "New conversation saved", desc: "Notification when MongoDB persists a new session", enabled: false },
+                  { label: "New document embedded", desc: "Notification when InsForge saves a new vector", enabled: true },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant">
                     <div>

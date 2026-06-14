@@ -71,6 +71,43 @@ export async function POST(req: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // --- INSFORGE RAG PIPELINE (Knowledge Retrieval) ---
+    let extraContext = "";
+    try {
+      const pool = getDbPool();
+      if (pool) {
+        // 1. Embed the user's prompt
+        const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+        const embedResult = await embeddingModel.embedContent(message);
+        const promptVector = `[${embedResult.embedding.values.join(',')}]`;
+
+        // 2. Perform cosine similarity search (<=> operator) in InsForge pgvector
+        // We get top 2 most relevant documents
+        const searchRes = await pool.query(`
+          SELECT filename, content, 1 - (embedding <=> $1) AS similarity 
+          FROM knowledge_base 
+          ORDER BY embedding <=> $1 
+          LIMIT 2
+        `, [promptVector]);
+
+        if (searchRes.rows.length > 0) {
+          // 3. Inject context
+          extraContext = "\n\nCRITICAL CONTEXT FROM COMPANY KNOWLEDGE BASE:\n";
+          searchRes.rows.forEach(row => {
+            // Only inject if similarity is somewhat relevant (e.g. > 0.5)
+            if (row.similarity > 0.5) {
+              extraContext += `\n--- Document: ${row.filename} ---\n${row.content}\n`;
+            }
+          });
+        }
+      }
+    } catch (ragError) {
+      console.error("❌ RAG Pipeline failed (Skipping context injection):", ragError);
+    }
+
+    const dynamicSystemPrompt = SYSTEM_PROMPT + extraContext;
+
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.5-flash",
       generationConfig: {
@@ -88,7 +125,7 @@ export async function POST(req: Request) {
 
     const chat = model.startChat({
       history: [
-        { role: "user", parts: [{ text: "System instructions: " + SYSTEM_PROMPT }] },
+        { role: "user", parts: [{ text: "System instructions: " + dynamicSystemPrompt }] },
         { role: "model", parts: [{ text: JSON.stringify({ mode: "chat", message: "Understood. I am Prism, ready to help.", documents: [], tasks: [] }) }] },
         ...chatHistory,
       ],

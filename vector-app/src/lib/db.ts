@@ -29,7 +29,10 @@ export async function initDb() {
   if (!p) return;
 
   try {
-    // Create the projects table if it doesn't exist
+    // 1. Enable pgvector extension (must be done before creating vector columns)
+    await p.query(`CREATE EXTENSION IF NOT EXISTS vector;`);
+
+    // 2. Create the projects table
     await p.query(`
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,
@@ -43,7 +46,19 @@ export async function initDb() {
         finance_markdown TEXT
       );
     `);
-    console.log("✅ Database initialized successfully");
+
+    // 3. Create the knowledge_base table for RAG
+    await p.query(`
+      CREATE TABLE IF NOT EXISTS knowledge_base (
+        id SERIAL PRIMARY KEY,
+        filename VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        embedding vector(768),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    console.log("✅ Database initialized successfully (including pgvector)");
   } catch (error) {
     console.error("❌ Failed to initialize database:", error);
   }
