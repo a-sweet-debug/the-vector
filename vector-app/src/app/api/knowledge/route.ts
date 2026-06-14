@@ -115,14 +115,13 @@ export async function GET() {
 
     // Select the content along with metadata
     const result = await pool.query(
-      `SELECT id, filename, content, created_at FROM knowledge_base ORDER BY created_at DESC LIMIT 10`
+      `SELECT id, filename, content, created_at FROM knowledge_base ORDER BY created_at DESC LIMIT 50`
     );
 
-    if (result.rows.length === 0) {
-      return NextResponse.json({ files: mockFiles });
-    }
+    // Merge the real database files with the mock files so both are always visible
+    const allFiles = [...result.rows, ...mockFiles];
 
-    return NextResponse.json({ files: result.rows });
+    return NextResponse.json({ files: allFiles });
   } catch (error) {
     console.error("Failed to fetch knowledge base:", error);
     return NextResponse.json({ files: mockFiles });
