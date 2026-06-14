@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./public/vector_logo.png" alt="Vector Logo" width="120" />
+  <img src="./assets/logo.png" alt="Vector Logo" width="120" />
   <h1>Vector AI Command Center</h1>
   <p>Your Autonomous Digital C-Suite.</p>
   <p>
