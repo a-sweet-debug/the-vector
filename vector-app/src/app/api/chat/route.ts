@@ -27,6 +27,7 @@ BEHAVIOR RULES:
 RESPONSE FORMAT (you MUST respond in valid JSON):
 {
   "mode": "chat" | "plan",
+  "title": "A short, 2-5 word name for this chat/project (e.g., 'Retro TV SaaS')",
   "message": "Your conversational response as Prism",
   "documents": [
     {
@@ -184,7 +185,7 @@ export async function POST(req: Request) {
           console.log("✅ Project updated in InsForge DB:", parsed.conversation_id);
         } else {
           // INSERT NEW PROJECT
-          let title = message.length > 50 ? message.substring(0, 47) + "..." : message;
+          let title = parsed.title || (message.length > 50 ? message.substring(0, 47) + "..." : message);
           let atlasDoc = '', nexusDoc = '', vanguardDoc = '', ledgerDoc = '';
           if (parsed.mode === "plan" && parsed.documents.length > 0) {
             atlasDoc = parsed.documents.find((d: any) => d.agent === 'Atlas')?.content || '';

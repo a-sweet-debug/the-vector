@@ -392,6 +392,12 @@ export function BoardRoomClient() {
     
     addTelemetry(`[Prism] Received input: Analyzing intent...`);
     
+    // Stagger agent startup to look like they are spinning up sequentially while we wait for the API
+    setTimeout(() => { setCeoState("Analyzing"); addTelemetry(`[Prism] Atlas engaged for strategy...`); }, 500);
+    setTimeout(() => { setCtoState("Analyzing"); addTelemetry(`[Prism] Nexus engaged for architecture...`); }, 1000);
+    setTimeout(() => { setMarketingState("Analyzing"); addTelemetry(`[Prism] Vanguard engaged for growth...`); }, 1500);
+    setTimeout(() => { setFinanceState("Analyzing"); addTelemetry(`[Prism] Ledger engaged for modeling...`); }, 2000);
+    
     // Add empty assistant message to fill in
     setMessages(prev => [...prev, { role: "assistant", agent: "Prism", content: "" }]);
 
@@ -423,13 +429,8 @@ export function BoardRoomClient() {
           fetchConversations(); // Update sidebar with new project
         }
 
-        // Planning mode — animate agent delegation
-        addTelemetry(`[Prism] Planning mode activated. Delegating to Executive Council...`);
-        
-        setTimeout(() => { addTelemetry(`[Prism] Delegating to [Atlas] for Business Strategy...`); setCeoState("Analyzing"); }, 300);
-        setTimeout(() => { addTelemetry(`[Prism] Delegating to [Nexus] for Technical Architecture...`); setCtoState("Analyzing"); }, 600);
-        setTimeout(() => { addTelemetry(`[Prism] Delegating to [Vanguard] for Marketing Plan...`); setMarketingState("Analyzing"); }, 900);
-        setTimeout(() => { addTelemetry(`[Prism] Delegating to [Ledger] for Financial Modeling...`); setFinanceState("Analyzing"); }, 1200);
+        // Planning mode — complete delegation
+        addTelemetry(`[Prism] Planning mode complete. Compiling Executive Council outputs...`);
 
         // Show Prism's message
         setMessages(prev => {
@@ -438,48 +439,49 @@ export function BoardRoomClient() {
           return newMsg;
         });
 
-        // After a brief delay, show documents and complete agents
+        if (data.documents && data.documents.length > 0) {
+          const newDocs = data.documents.map((doc: any, i: number) => ({
+            _id: `doc-${Date.now()}-${i}`,
+            title: doc.title,
+            content: doc.content,
+            status: "completed",
+            agent: doc.agent,
+            conversation_id: data.conversation_id || conversationId || "local",
+          }));
+          setDocuments(prev => [...newDocs, ...prev]);
+          setActiveRightTab("documents");
+          
+          data.documents.forEach((doc: any) => {
+            addTelemetry(`[${doc.agent}] Generated: "${doc.title}"`);
+          });
+        }
+
+        if (data.tasks && data.tasks.length > 0) {
+          data.tasks.forEach((task: any) => {
+            addTelemetry(`[${task.agent}] Task assigned (${task.priority}): ${task.task}`);
+          });
+        }
+
+        addTelemetry("[System] All documents compiled. Council tasks assigned.");
+        setCeoState("Complete");
+        setCtoState("Complete");
+        setMarketingState("Complete");
+        setFinanceState("Complete");
+        setIsProcessing(false);
+
         setTimeout(() => {
-          if (data.documents && data.documents.length > 0) {
-            const newDocs = data.documents.map((doc: any, i: number) => ({
-              _id: `doc-${Date.now()}-${i}`,
-              title: doc.title,
-              content: doc.content,
-              status: "completed",
-              agent: doc.agent,
-              conversation_id: data.conversation_id || conversationId || "local",
-            }));
-            setDocuments(prev => [...newDocs, ...prev]);
-            setActiveRightTab("documents");
-            
-            data.documents.forEach((doc: any) => {
-              addTelemetry(`[${doc.agent}] Generated: "${doc.title}"`);
-            });
-          }
-
-          if (data.tasks && data.tasks.length > 0) {
-            data.tasks.forEach((task: any) => {
-              addTelemetry(`[${task.agent}] Task assigned (${task.priority}): ${task.task}`);
-            });
-          }
-
-          addTelemetry("[System] All documents compiled. Council tasks assigned.");
-          setCeoState("Complete");
-          setCtoState("Complete");
-          setMarketingState("Complete");
-          setFinanceState("Complete");
-          setIsProcessing(false);
-
-          setTimeout(() => {
-            setCeoState("Idle");
-            setCtoState("Idle");
-            setMarketingState("Idle");
-            setFinanceState("Idle");
-          }, 3000);
-        }, 2000);
+          setCeoState("Idle");
+          setCtoState("Idle");
+          setMarketingState("Idle");
+          setFinanceState("Idle");
+        }, 3000);
 
       } else {
-        // Chat mode — just show the response
+        // Chat mode — abort council planning animation
+        setCeoState("Idle");
+        setCtoState("Idle");
+        setMarketingState("Idle");
+        setFinanceState("Idle");
         addTelemetry(`[Prism] Responding in conversation mode.`);
         setMessages(prev => {
           const newMsg = [...prev];

@@ -1,24 +1,45 @@
 import { NextResponse } from 'next/server';
+import { getDbPool, initDb } from '@/lib/db';
+
+let dbInitialized = false;
 
 export async function GET() {
-  const backendUrl = process.env.MCP_SERVER_URL || 'http://127.0.0.1:8000';
-  
   try {
-    const response = await fetch(`${backendUrl}/api/conversations`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    if (!dbInitialized) {
+      await initDb();
+      dbInitialized = true;
+    }
 
-    if (!response.ok) {
+    const pool = getDbPool();
+    if (!pool) {
       return NextResponse.json({ conversations: [] });
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const result = await pool.query(
+      'SELECT id, title, description, created_at, chat_history FROM projects ORDER BY created_at DESC'
+    );
+
+    const conversations = result.rows.map(row => {
+      let messages = [];
+      try {
+        messages = typeof row.chat_history === 'string' 
+          ? JSON.parse(row.chat_history) 
+          : (row.chat_history || []);
+      } catch (e) {
+        // ignore fallback
+      }
+
+      return {
+        conversation_id: `db-${row.id}`,
+        title: row.title,
+        created_at: row.created_at,
+        messages: messages
+      };
+    });
+
+    return NextResponse.json({ conversations });
   } catch (error) {
-    // If backend is unreachable, just return empty list so the frontend can load mock data
+    console.error("Failed to load conversations from InsForge DB:", error);
     return NextResponse.json({ conversations: [] });
   }
 }
