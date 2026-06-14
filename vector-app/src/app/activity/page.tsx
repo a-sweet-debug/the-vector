@@ -51,7 +51,7 @@ export default function ActivityPage() {
             Activity Log
           </h2>
           <p className="text-sm text-on-surface-variant/70 max-w-2xl">
-            Review past agent orchestrations, architecture plans, and executive strategies saved in MongoDB.
+            Review past agent orchestrations, architecture plans, and executive strategies saved in the InsForge database.
           </p>
         </div>
       </motion.div>
