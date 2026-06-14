@@ -1,0 +1,221 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { NextResponse } from "next/server";
+import { getDbPool, initDb } from "@/lib/db";
+
+const SYSTEM_PROMPT = `You are Prism, the Lead Architect AI agent at Vector AI Command Center. You are intelligent, strategic, and articulate.
+
+PERSONALITY:
+- Professional yet approachable. You speak with confidence and clarity.
+- You use concise, actionable language. No fluff.
+- You reference your team members by name: Atlas (CEO/Strategy), Nexus (CTO/Engineering), Vanguard (CMO/Marketing), Ledger (CFO/Finance).
+
+BEHAVIOR RULES:
+1. For NORMAL CONVERSATION (greetings, questions, advice, general discussion):
+   - Respond naturally and helpfully as Prism the architect.
+   - Do NOT generate documents or delegate to agents.
+   - Keep responses concise (2-4 paragraphs max).
+   - You can discuss strategy, tech, business, startups, AI, etc.
+   - Set "mode" to "chat" in your response.
+
+2. For PLANNING REQUESTS (when user asks to "make a plan", "build a strategy", "analyze this idea", "create a roadmap", "help me launch", "build this startup", or any request that implies creating a comprehensive plan for a product/startup/project):
+   - Set "mode" to "plan" in your response.
+   - Provide a brief strategic overview in "message" (2-3 paragraphs about what you see and what the council will do).
+   - Generate documents from each agent in the "documents" array.
+   - Assign tasks to agents in the "tasks" array.
+   - Each document should be substantial (at least 300 words) with proper markdown formatting, headers, bullet points.
+
+RESPONSE FORMAT (you MUST respond in valid JSON):
+{
+  "mode": "chat" | "plan",
+  "title": "A short, 2-5 word name for this chat/project (e.g., 'Retro TV SaaS')",
+  "message": "Your conversational response as Prism",
+  "documents": [
+    {
+      "title": "Document Title",
+      "agent": "Atlas" | "Nexus" | "Vanguard" | "Ledger",
+      "content": "Full markdown content of the document"
+    }
+  ],
+  "tasks": [
+    {
+      "agent": "Atlas" | "Nexus" | "Vanguard" | "Ledger",
+      "task": "Description of the assigned task",
+      "priority": "high" | "medium" | "low"
+    }
+  ]
+}
+
+For "chat" mode, documents and tasks should be empty arrays.
+For "plan" mode, generate 4 documents (one from each agent) and 4-8 tasks distributed across agents.
+
+IMPORTANT: Always respond with ONLY valid JSON. No markdown code fences. No extra text outside the JSON.`;
+
+// Ensure DB is initialized
+let dbInitialized = false;
+
+export async function POST(req: Request) {
+  try {
+    if (!dbInitialized) {
+      await initDb();
+      dbInitialized = true;
+    }
+
+    const { message, history, conversation_id } = await req.json();
+
+    if (!message) {
+      return NextResponse.json({ error: "Missing message" }, { status: 400 });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // --- INSFORGE RAG PIPELINE (Knowledge Retrieval) ---
+    let extraContext = "";
+    try {
+      const pool = getDbPool();
+      if (pool) {
+        // 1. Embed the user's prompt
+        const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+        const embedResult = await embeddingModel.embedContent(message);
+        const promptVector = `[${embedResult.embedding.values.join(',')}]`;
+
+        // 2. Perform cosine similarity search (<=> operator) in InsForge pgvector
+        // We get top 2 most relevant documents
+        const searchRes = await pool.query(`
+          SELECT filename, content, 1 - (embedding <=> $1) AS similarity 
+          FROM knowledge_base 
+          ORDER BY embedding <=> $1 
+          LIMIT 2
+        `, [promptVector]);
+
+        if (searchRes.rows.length > 0) {
+          // 3. Inject context
+          extraContext = "\n\nCRITICAL CONTEXT FROM COMPANY KNOWLEDGE BASE:\n";
+          searchRes.rows.forEach(row => {
+            // Only inject if similarity is somewhat relevant (e.g. > 0.5)
+            if (row.similarity > 0.5) {
+              extraContext += `\n--- Document: ${row.filename} ---\n${row.content}\n`;
+            }
+          });
+        }
+      }
+    } catch (ragError) {
+      console.error("❌ RAG Pipeline failed (Skipping context injection):", ragError);
+    }
+
+    const dynamicSystemPrompt = SYSTEM_PROMPT + extraContext;
+
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.5-flash",
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 8192,
+        responseMimeType: "application/json",
+      },
+    });
+
+    // Build chat history
+    const chatHistory = (history || []).map((msg: any) => ({
+      role: msg.role === "assistant" ? "model" : "user",
+      parts: [{ text: msg.content }],
+    }));
+
+    const chat = model.startChat({
+      history: [
+        { role: "user", parts: [{ text: "System instructions: " + dynamicSystemPrompt }] },
+        { role: "model", parts: [{ text: JSON.stringify({ mode: "chat", message: "Understood. I am Prism, ready to help.", documents: [], tasks: [] }) }] },
+        ...chatHistory,
+      ],
+    });
+
+    const result = await chat.sendMessage(message);
+    const text = result.response.text();
+    
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      // If Gemini returns non-JSON, wrap it
+      parsed = { mode: "chat", message: text, documents: [], tasks: [] };
+    }
+
+    // Ensure required fields exist
+    parsed.mode = parsed.mode || "chat";
+    parsed.message = parsed.message || "";
+    parsed.documents = parsed.documents || [];
+    parsed.tasks = parsed.tasks || [];
+
+    // --- INSFORGE DATABASE INTEGRATION ---
+    try {
+      const pool = getDbPool();
+      if (pool) {
+        const updatedHistory = [
+          ...(history || []).map((m: any) => ({ role: m.role, content: m.content })),
+          { role: "user", content: message },
+          { role: "assistant", content: parsed.message || "Working on it..." }
+        ];
+
+        if (conversation_id && conversation_id.startsWith('db-')) {
+          const numericId = conversation_id.replace('db-', '');
+          
+          let updateQuery = `UPDATE projects SET chat_history = $1`;
+          let values: any[] = [JSON.stringify(updatedHistory)];
+          
+          if (parsed.mode === "plan" && parsed.documents.length > 0) {
+            const atlasDoc = parsed.documents.find((d: any) => d.agent === 'Atlas')?.content || '';
+            const nexusDoc = parsed.documents.find((d: any) => d.agent === 'Nexus')?.content || '';
+            const vanguardDoc = parsed.documents.find((d: any) => d.agent === 'Vanguard')?.content || '';
+            const ledgerDoc = parsed.documents.find((d: any) => d.agent === 'Ledger')?.content || '';
+            
+            updateQuery += `, summary_markdown = $2, architecture_markdown = $3, marketing_markdown = $4, finance_markdown = $5`;
+            values.push(atlasDoc, nexusDoc, vanguardDoc, ledgerDoc);
+            updateQuery += ` WHERE id = $6`;
+            values.push(numericId);
+          } else {
+            updateQuery += ` WHERE id = $2`;
+            values.push(numericId);
+          }
+
+          await pool.query(updateQuery, values);
+          parsed.conversation_id = conversation_id;
+          console.log("✅ Project updated in InsForge DB:", parsed.conversation_id);
+        } else {
+          // INSERT NEW PROJECT
+          let title = parsed.title || (message.length > 50 ? message.substring(0, 47) + "..." : message);
+          let atlasDoc = '', nexusDoc = '', vanguardDoc = '', ledgerDoc = '';
+          if (parsed.mode === "plan" && parsed.documents.length > 0) {
+            atlasDoc = parsed.documents.find((d: any) => d.agent === 'Atlas')?.content || '';
+            nexusDoc = parsed.documents.find((d: any) => d.agent === 'Nexus')?.content || '';
+            vanguardDoc = parsed.documents.find((d: any) => d.agent === 'Vanguard')?.content || '';
+            ledgerDoc = parsed.documents.find((d: any) => d.agent === 'Ledger')?.content || '';
+          }
+          
+          const dbResult = await pool.query(
+            `INSERT INTO projects (title, description, summary_markdown, architecture_markdown, marketing_markdown, finance_markdown, chat_history)
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+            [title, message, atlasDoc, nexusDoc, vanguardDoc, ledgerDoc, JSON.stringify(updatedHistory)]
+          );
+          
+          if (dbResult.rows.length > 0) {
+            parsed.conversation_id = `db-${dbResult.rows[0].id}`;
+            console.log("✅ New Project saved to InsForge DB with ID:", parsed.conversation_id);
+          }
+        }
+      }
+    } catch (dbError) {
+      console.error("❌ Failed to save project to InsForge DB:", dbError);
+    }
+
+    return NextResponse.json(parsed);
+  } catch (error: any) {
+    console.error("Chat API Error:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to process request" },
+      { status: 500 }
+    );
+  }
+}
