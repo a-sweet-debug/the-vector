@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, FolderOpen, Bot, LineChart, CreditCard, Network, History, Settings, X, Cpu, Sparkles, Zap } from "lucide-react";
+import { LayoutDashboard, FolderOpen, Bot, LineChart, CreditCard, Network, History, Settings, X, Cpu, Sparkles, Zap, Database } from "lucide-react";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -30,6 +30,7 @@ export function Sidebar() {
     { name: "Finance", icon: CreditCard, href: "/finance" },
     { name: "Architecture", icon: Network, href: "/architecture" },
     { name: "Activity", icon: History, href: "/activity" },
+    { name: "Knowledge Base", icon: Database, href: "/knowledge" },
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
 
