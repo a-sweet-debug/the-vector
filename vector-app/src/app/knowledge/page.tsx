@@ -1,0 +1,218 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Database, Shield, Cpu, Save, UploadCloud, FileText, Search, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+
+export default function KnowledgeBasePage() {
+  const [uploading, setUploading] = useState(false);
+  const [files, setFiles] = useState<{id: number, filename: string, created_at: string}[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [seeding, setSeeding] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/knowledge")
+      .then(res => res.json())
+      .then(data => setFiles(data.files || []))
+      .catch(console.error);
+  }, []);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/knowledge", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Success: " + data.message);
+        fetch("/api/knowledge").then(r => r.json()).then(d => setFiles(d.files || []));
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (err) {
+      alert("Failed to upload file");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSeedDocuments = async () => {
+    setSeeding(true);
+    try {
+      const res = await fetch("/api/knowledge/seed", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+        fetch("/api/knowledge").then(r => r.json()).then(d => setFiles(d.files || []));
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (err) {
+      alert("Failed to seed documents");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const filteredFiles = files.filter(f => f.filename.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  return (
+    <div className="px-6 md:px-12 pb-8 max-w-[1600px] mx-auto pt-8">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4"
+      >
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-on-surface mb-1 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+              <Database className="w-5 h-5" />
+            </div>
+            Knowledge Base
+          </h2>
+          <p className="text-sm text-on-surface-variant/70 max-w-2xl mt-2">
+            Upload company documents, playbooks, and guidelines. Prism uses RAG (Retrieval-Augmented Generation) via InsForge pgvector to read these before executing orchestrations.
+          </p>
+        </div>
+        
+        <div className="w-full md:w-auto flex items-center gap-3">
+          <button
+            onClick={handleSeedDocuments}
+            disabled={seeding || uploading}
+            className="flex items-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 border border-indigo-500/20 px-4 py-2 rounded-lg font-semibold text-sm transition-colors disabled:opacity-50"
+          >
+            {seeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+            {seeding ? "Seeding..." : "Add Sample Data"}
+          </button>
+          
+          <div className="relative group flex-1 md:flex-none">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-on-surface-variant group-focus-within:text-indigo-500 transition-colors" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search documents..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="block w-full md:w-64 pl-10 pr-3 py-2 border border-outline-variant rounded-lg leading-5 bg-surface-container placeholder-on-surface-variant/50 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
+            />
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Upload Section */}
+        <div className="lg:col-span-1">
+          <div className="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden h-full">
+            <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-lowest">
+              <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
+                <UploadCloud className="w-5 h-5 text-indigo-500" /> Upload Context
+              </h3>
+            </div>
+            
+            <div className="p-6">
+              <div className="border-2 border-dashed border-outline-variant/50 rounded-xl p-8 text-center bg-surface-container-lowest hover:bg-surface-container/50 transition-colors h-[250px] flex flex-col items-center justify-center group cursor-pointer relative overflow-hidden">
+                <input 
+                  type="file" 
+                  id="fileUpload" 
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                  accept=".txt,.md,.csv" 
+                  onChange={handleFileUpload} 
+                  disabled={uploading}
+                />
+                <div className="w-16 h-16 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  {uploading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Save className="w-8 h-8" />}
+                </div>
+                <span className="text-base font-bold text-on-surface mb-2">
+                  {uploading ? "Vectorizing Document..." : "Click or Drag to Upload"}
+                </span>
+                <span className="text-xs text-on-surface-variant">Supports .txt, .md, .csv (Max 5MB)</span>
+              </div>
+
+              <div className="mt-6 bg-indigo-500/5 border border-indigo-500/20 rounded-lg p-4">
+                <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <Shield className="w-4 h-4" /> Security Note
+                </h4>
+                <p className="text-xs text-on-surface-variant leading-relaxed">
+                  Documents uploaded here are embedded using Gemini text-embedding-004 and securely stored in the InsForge PostgreSQL vector database. Row-level security guarantees data isolation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Documents List */}
+        <div className="lg:col-span-2">
+          <div className="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden min-h-[450px]">
+            <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-lowest flex justify-between items-center">
+              <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
+                <Database className="w-5 h-5 text-emerald-500" /> Vectorized Database
+              </h3>
+              <span className="text-xs font-bold bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                {files.length} Vectors
+              </span>
+            </div>
+
+            <div className="p-0">
+              {files.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-20 text-on-surface-variant/50">
+                  <FileText className="w-16 h-16 mb-4 opacity-50" />
+                  <p className="text-lg font-medium">Database Empty</p>
+                  <p className="text-sm mt-1">Upload files to populate the vector space.</p>
+                </div>
+              ) : filteredFiles.length === 0 ? (
+                <div className="p-12 text-center text-on-surface-variant/70 text-sm">
+                  No documents found matching "{searchQuery}".
+                </div>
+              ) : (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-surface-container-low text-xs font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant">
+                      <th className="px-6 py-4">Document Name</th>
+                      <th className="px-6 py-4">Embedded Date</th>
+                      <th className="px-6 py-4 text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-outline-variant">
+                    {filteredFiles.map(file => (
+                      <tr key={file.id} className="hover:bg-surface-container-lowest transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded bg-blue-500/10 flex items-center justify-center">
+                              <FileText className="w-4 h-4 text-blue-500" />
+                            </div>
+                            <span className="text-sm font-semibold text-on-surface">{file.filename}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-on-surface-variant">
+                            {new Date(file.created_at).toLocaleDateString()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                            <Cpu className="w-3 h-3" /> Indexed
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
