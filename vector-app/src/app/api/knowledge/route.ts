@@ -101,6 +101,24 @@ export async function GET() {
       filename: "Button_Viral_Game_Mechanics.csv", 
       content: "Level,Interaction,Event_Trigger,Audio_File\n1,Click,Button gets slightly smaller,pop.wav\n2,Click,Screen shakes,rumble.mp3\n3,Hover,Button runs away from cursor,slide.wav\n4,Click,Button spawns 10 fake buttons,glitch.wav\n5,Wait 10s,Button whispers 'please don't',whisper.mp3\n6,Click,Browser tab attempts to close,scream.wav",
       created_at: new Date(baseDate - 20000000).toISOString() 
+    },
+    {
+      id: 6,
+      filename: "SOC2_Compliance_Checklist.md",
+      content: "# SOC2 Compliance Requirements\n\n1. All user data must be encrypted at rest using AES-256.\n2. Access to production databases requires MFA and a VPN connection.\n3. Audit logs must be retained for at least 365 days.\n4. Zero-trust architecture is mandatory for all internal microservices.",
+      created_at: new Date(baseDate - 5000000).toISOString()
+    },
+    {
+      id: 7,
+      filename: "Engineering_Handbook.txt",
+      content: "Vector AI Command Center Engineering Standards:\n- Backend: Next.js App Router (Node.js/Edge)\n- Database: InsForge PostgreSQL with pgvector\n- Styling: Tailwind CSS with emerald/teal gradients\n- Architecture: Event-driven microservices\nAll code must be reviewed by the Nexus agent before deployment.",
+      created_at: new Date(baseDate - 3000000).toISOString()
+    },
+    {
+      id: 8,
+      filename: "Brand_Guidelines_2026.md",
+      content: "# Brand Guidelines\n\n**Voice:** Professional, authoritative, and concise.\n**Primary Colors:** Emerald Green (#10b981), Teal (#0f766e)\n**Secondary Colors:** Indigo (#4f46e5)\n**Font:** Inter for UI, Fira Code for code blocks.\nNever use the word 'Fake' in any public-facing materials.",
+      created_at: new Date(baseDate - 1000000).toISOString()
     }
   ];
 
