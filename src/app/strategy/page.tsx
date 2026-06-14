@@ -485,7 +485,7 @@ export default function StrategyPage() {
     // Dynamically import html2pdf to avoid SSR issues with window object
     const html2pdf = (await import('html2pdf.js')).default;
     
-    const opt = {
+    const opt: any = {
       margin:       0.5,
       filename:     `${activeDoc.id}_strategy.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
