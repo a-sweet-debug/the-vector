@@ -367,6 +367,24 @@ export default function StrategyPage() {
 
   const activeDoc = documents.find(d => d.id === activeDocId) || documents[0];
 
+  const handleExportPDF = async () => {
+    const element = document.getElementById('document-content');
+    if (!element) return;
+    
+    // Dynamically import html2pdf to avoid SSR issues with window object
+    const html2pdf = (await import('html2pdf.js')).default;
+    
+    const opt = {
+      margin:       0.5,
+      filename:     `${activeDoc.id}_strategy.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#09090b' },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
+  };
+
   return (
     <div className="px-6 md:px-12 pb-8 max-w-[1600px] mx-auto h-[calc(100vh-4rem)] flex flex-col pt-8">
       <motion.div
@@ -385,7 +403,7 @@ export default function StrategyPage() {
             <Share2 className="w-4 h-4" />
             Share
           </button>
-          <button onClick={() => window.print()} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center gap-2 active:scale-[0.98] print:hidden">
+          <button onClick={handleExportPDF} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center gap-2 active:scale-[0.98] print:hidden">
             <Download className="w-4 h-4" />
             Export PDF
           </button>
@@ -450,7 +468,7 @@ export default function StrategyPage() {
           </div>
 
           {/* Document Content */}
-          <div className="px-12 py-10 max-w-4xl mx-auto w-full">
+          <div id="document-content" className="px-12 py-10 max-w-4xl mx-auto w-full bg-surface-container-lowest">
             <h1 className="text-4xl font-bold tracking-tight text-on-surface mb-6">{activeDoc.title}</h1>
             
             <div className="prose prose-invert prose-slate max-w-none prose-p:text-on-surface-variant prose-headings:text-on-surface prose-strong:text-on-surface prose-ul:text-on-surface-variant prose-li:marker:text-primary">
