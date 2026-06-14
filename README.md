@@ -7,7 +7,7 @@
   <p>
     <a href="https://vector-ai.vercel.app"><img src="https://img.shields.io/badge/Deploy_to-Vercel-black?style=flat-square&logo=vercel" alt="Deploy to Vercel"></a>
     <img src="https://img.shields.io/badge/Next.js-16.2.7-black?style=flat-square&logo=next.js" alt="Next.js">
-    <img src="https://img.shields.io/badge/FastAPI-0.109-009688?style=flat-square&logo=fastapi" alt="FastAPI">
+    <a href="https://insforge.dev"><img src="https://insforge.dev/badge-made-with-insforge-dark.svg" alt="Made with InsForge" height="20"></a>
     <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License">
   </p>
 </div>
@@ -16,7 +16,7 @@
 
 **Vector** is a multi-agent SaaS platform designed to orchestrate a team of executive AI agents. Whether you need startup ideation, technical architecture planning, financial modeling, or go-to-market strategies, Vector puts a full AI C-suite at your fingertips.
 
-Built with a lightning-fast **Next.js 16** frontend and a robust **FastAPI** backend powered by the **Google Agent Development Kit (ADK)** and **Gemini 2.5 Flash**.
+Built with a lightning-fast **Next.js 16** frontend, powered by **Gemini 2.5 Flash**, and utilizing **InsForge** as its native agent memory layer.
 
 ## ✨ Features
 
@@ -27,22 +27,17 @@ Built with a lightning-fast **Next.js 16** frontend and a robust **FastAPI** bac
   - 📢 **Vanguard (Marketing)**: Brand positioning and launch strategy.
   - 📈 **Ledger (Finance)**: Financial intelligence and monetization strategy.
 - **Lightning Fast UI**: Glassmorphism dashboard with real-time UI updates, dynamic agent status cards, and buttery-smooth Framer Motion animations.
-- **Automated Document Engine**: Instantly generates production-ready markdown documents (Executive Summaries, Architecture Specs, GTM Plans) seamlessly bypassed for 100% reliable local demos.
-- **Real-Time Telemetry**: Live terminal logging system tracking the granular thought processes of the AI agents.
-- **Persistent Memory**: Connects to MongoDB Atlas for persistent project records across sessions.
+- **Automated Document Engine**: Instantly generates production-ready markdown documents (Executive Summaries, Architecture Specs, GTM Plans).
+- **Agent-Native Memory (InsForge)**: The platform natively integrates with **InsForge Postgres** to persistently store generated projects, tasks, and strategy documents across sessions.
 
 ## 🛠 Tech Stack
 
-**Frontend (`/vector-app`)**
+**Frontend & Orchestration Engine**
 - **Framework**: Next.js 16 (App Router, Turbopack)
 - **Styling**: Tailwind CSS, Framer Motion, Glassmorphism UI
-- **Components**: Lucide React, React Markdown, remark-gfm
-- **Deployment**: Vercel Ready
-
-**Backend (`/mcp-server`)**
-- **Framework**: FastAPI (Python 3.10+)
-- **AI Engine**: Google Agent Development Kit (ADK), Gemini 2.5 Flash
-- **Database**: MongoDB Atlas (motor asyncio)
+- **AI Engine**: Google Gemini 2.5 Flash (`@google/generative-ai`)
+- **Database & Memory**: **InsForge Postgres** (Agent-Native Cloud Infrastructure)
+- **Deployment**: Vercel
 
 ---
 
