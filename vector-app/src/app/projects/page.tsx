@@ -79,6 +79,7 @@ const activeInitiatives = [
     icon: Target,
     color: "text-rose-500",
     bg: "bg-rose-500/10",
+  }
 ];
 
 const agentWorkspaces = [

@@ -121,13 +121,61 @@ export function BoardRoomClient() {
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
   useEffect(() => { telemetryEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [telemetry]);
 
+  const getMockConversations = () => {
+    const baseDate = Date.now();
+    return [
+      {
+        conversation_id: "fake-1",
+        title: "Project NexusRed: Zero-Trust Security Arch",
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 2).toISOString(),
+        messages: [
+          { role: "user", content: "We need a zero-trust architecture for a fintech client." },
+          { role: "assistant", agent: "Prism", content: "Understood. Rallying the team for a Zero-Trust architecture plan." },
+          { role: "assistant", agent: "Nexus", content: "I recommend a mesh architecture using Envoy proxies and mutual TLS for all service-to-service communication." },
+          { role: "assistant", agent: "Ledger", content: "Cost estimate for mTLS overhead on AWS is around $400/mo at our current scale." }
+        ]
+      },
+      {
+        conversation_id: "fake-2",
+        title: "Aura Health: Predictive ML Wearable",
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 24).toISOString(),
+        messages: [
+          { role: "user", content: "Design a predictive ML model for wearable health tech." },
+          { role: "assistant", agent: "Prism", content: "Analyzing health tech requirements..." },
+          { role: "assistant", agent: "Atlas", content: "The wearable market is heavily saturated. We need to focus on a specific niche, like predictive cardiovascular event detection." },
+          { role: "assistant", agent: "Vanguard", content: "We can market this to high-performance athletes as a premium tier subscription." }
+        ]
+      },
+      {
+        conversation_id: "fake-3",
+        title: "QuantumLedger: HFT Financial Engine",
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 48).toISOString(),
+        messages: [
+          { role: "user", content: "Build an HFT engine in Rust." },
+          { role: "assistant", agent: "Prism", content: "High-Frequency Trading engine requested. Engaging Nexus for systems architecture." },
+          { role: "assistant", agent: "Nexus", content: "Rust is perfect. We'll use io_uring for zero-copy networking to achieve sub-microsecond latency." }
+        ]
+      },
+      {
+        conversation_id: "fake-4",
+        title: "Oasis: Decentralized Compute Grid",
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 120).toISOString(),
+        messages: [
+          { role: "user", content: "Create a decentralized GPU compute grid." },
+          { role: "assistant", agent: "Prism", content: "Delegating Web3 compute grid analysis..." },
+          { role: "assistant", agent: "Ledger", content: "Tokenomics will require a burn mechanism to maintain deflationary pressure." }
+        ]
+      }
+    ];
+  };
+
   // Fetch conversations list
   const fetchConversations = async () => {
     try {
       const res = await fetch('/api/conversations');
       if (res.ok) {
         const data = await res.json();
-        setConversations(data.conversations || []);
+        setConversations([...(data.conversations || []), ...getMockConversations()]);
       }
     } catch (err) {
       console.error("Failed to fetch conversations", err);
@@ -140,7 +188,7 @@ export function BoardRoomClient() {
         const res = await fetch('/api/conversations');
         if (!res.ok) return;
         const data = await res.json();
-        const list = data.conversations || [];
+        const list = [...(data.conversations || []), ...getMockConversations()];
         setConversations(list);
         
         // Auto-select based on localStorage first, fallback to list[0]
@@ -153,20 +201,31 @@ export function BoardRoomClient() {
           setIsProcessing(true);
           setTelemetry(prev => [...prev, `[SYSTEM] Auto-restoring active session ${targetConvId}...`]);
           
-          const convRes = await fetch(`/api/conversations/${targetConvId}`);
-          if (convRes.ok) {
-            const convData = await convRes.json();
-            if (convData.messages && convData.messages.length > 0) {
-              const mapped = convData.messages.map((m: any) => ({
-                role: m.role,
-                content: m.content,
-                agent: m.role === 'assistant' ? 'Prism' : undefined
-              }));
-              setMessages(mapped);
+          if (targetConvId.startsWith('fake-')) {
+            const mockConv = getMockConversations().find(c => c.conversation_id === targetConvId);
+            if (mockConv && mockConv.messages) {
+              setMessages(mockConv.messages.map(m => ({...m, agent: m.agent || (m.role === 'assistant' ? 'Prism' : undefined)})));
               setConversationId(targetConvId);
               localStorage.setItem('active_conversation_id', targetConvId);
-              fetchDocuments(targetConvId);
-              setTelemetry(prev => [...prev, `[SYSTEM] Restored active conversation successfully.`]);
+              setDocuments([]); // Mock projects have no docs
+              setTelemetry(prev => [...prev, `[SYSTEM] Restored mock session successfully.`]);
+            }
+          } else {
+            const convRes = await fetch(`/api/conversations/${targetConvId}`);
+            if (convRes.ok) {
+              const convData = await convRes.json();
+              if (convData.messages && convData.messages.length > 0) {
+                const mapped = convData.messages.map((m: any) => ({
+                  role: m.role,
+                  content: m.content,
+                  agent: m.role === 'assistant' ? 'Prism' : undefined
+                }));
+                setMessages(mapped);
+                setConversationId(targetConvId);
+                localStorage.setItem('active_conversation_id', targetConvId);
+                fetchDocuments(targetConvId);
+                setTelemetry(prev => [...prev, `[SYSTEM] Restored active conversation successfully.`]);
+              }
             }
           }
           setIsProcessing(false);
@@ -187,6 +246,21 @@ export function BoardRoomClient() {
     setIsProcessing(true);
     addTelemetry(`[SYSTEM] Loading conversation ${convId}...`);
     try {
+      if (convId.startsWith('fake-')) {
+        const mockConv = getMockConversations().find(c => c.conversation_id === convId);
+        if (mockConv && mockConv.messages) {
+          setMessages(mockConv.messages.map(m => ({...m, agent: m.agent || (m.role === 'assistant' ? 'Prism' : undefined)})));
+          setConversationId(convId);
+          localStorage.setItem('active_conversation_id', convId);
+          setDocuments([]); // No docs for mocks
+          setEditingDoc(null);
+          addTelemetry(`[SYSTEM] Loaded conversation successfully.`);
+        } else {
+          throw new Error("Mock conversation not found.");
+        }
+        return;
+      }
+
       const res = await fetch(`/api/conversations/${convId}`);
       if (!res.ok) throw new Error(`Failed to load conversation: ${res.status}`);
       const data = await res.json();
