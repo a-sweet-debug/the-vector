@@ -82,74 +82,7 @@ const activeInitiatives = [
   }
 ];
 
-const seedProjects: Conversation[] = [
-  {
-    conversation_id: "seed-quantum-ai-saas",
-    title: "Quantum AI — SaaS Analytics Platform",
-    created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-    messages: [
-      { role: "user", content: "Build a SaaS analytics platform powered by AI that provides real-time business intelligence dashboards for startups." },
-      { role: "assistant", content: "I'll coordinate the executive council to develop a comprehensive strategy for Quantum AI. Atlas will handle business strategy, Nexus will architect the tech stack, Vanguard will design the GTM plan, and Ledger will model the financials..." },
-      { role: "assistant", content: "## Executive Summary\n\nQuantum AI is a next-generation SaaS analytics platform that leverages machine learning to deliver real-time business intelligence. Target market: Series A–B startups needing actionable insights without a dedicated data team." },
-    ],
-    documents_count: 4,
-  },
-  {
-    conversation_id: "seed-nexus-fintech",
-    title: "Nexus Pay — Fintech Super App",
-    created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
-    messages: [
-      { role: "user", content: "Design a fintech super app combining payments, investments, and budgeting with AI-driven financial advice." },
-      { role: "assistant", content: "Excellent concept. The council is analyzing the fintech landscape. Ledger is modeling revenue streams while Nexus evaluates the regulatory tech stack requirements..." },
-    ],
-    documents_count: 3,
-  },
-  {
-    conversation_id: "seed-vanguard-edtech",
-    title: "Vanguard Learn — AI Tutoring Platform",
-    created_at: new Date(Date.now() - 8 * 86400000).toISOString(),
-    messages: [
-      { role: "user", content: "Create an AI-powered adaptive tutoring platform for K-12 students with personalized learning paths." },
-      { role: "assistant", content: "Atlas is drafting the business model. The EdTech market is projected at $400B by 2027. We'll target US public school districts first..." },
-      { role: "assistant", content: "Nexus recommends a microservices architecture with a real-time assessment engine powered by Gemini for dynamic question generation." },
-      { role: "user", content: "What about the competitive landscape?" },
-      { role: "assistant", content: "Vanguard has completed the competitive analysis. Key competitors: Khan Academy, Duolingo, Century Tech. Our differentiator: real-time adaptive difficulty powered by multi-modal AI assessment." },
-    ],
-    documents_count: 6,
-  },
-  {
-    conversation_id: "seed-atlas-healthtech",
-    title: "Atlas Health — Remote Patient Monitoring",
-    created_at: new Date(Date.now() - 12 * 86400000).toISOString(),
-    messages: [
-      { role: "user", content: "Build a remote patient monitoring platform integrating IoT wearables with AI diagnostics for chronic disease management." },
-      { role: "assistant", content: "This is a high-impact healthcare initiative. Atlas is evaluating the regulatory landscape (HIPAA, FDA clearance). Nexus is designing the IoT data pipeline architecture..." },
-    ],
-    documents_count: 5,
-  },
-  {
-    conversation_id: "seed-prism-devtools",
-    title: "Prism DevKit — AI Developer Tools",
-    created_at: new Date(Date.now() - 18 * 86400000).toISOString(),
-    messages: [
-      { role: "user", content: "Create an AI-powered developer toolkit that automates code review, generates documentation, and provides intelligent debugging assistance." },
-      { role: "assistant", content: "The council is excited about this one. Nexus is architecting the AST analysis engine. Atlas sees a $15B TAM in developer productivity tools..." },
-      { role: "assistant", content: "## Technical Architecture\n\nCore engine: Language-agnostic AST parser → Gemini 2.5 reasoning layer → IDE plugin interface. Supporting: GitHub/GitLab CI integration, real-time collaboration, and team analytics." },
-    ],
-    documents_count: 7,
-  },
-  {
-    conversation_id: "seed-ledger-proptech",
-    title: "Ledger Estates — AI Property Valuation",
-    created_at: new Date(Date.now() - 25 * 86400000).toISOString(),
-    messages: [
-      { role: "user", content: "Design a proptech platform that uses AI for real-time property valuation, market prediction, and investment portfolio optimization." },
-      { role: "assistant", content: "Ledger is modeling the financial projections. The proptech market offers strong unit economics with a SaaS + transaction fee hybrid model..." },
-    ],
-    documents_count: 2,
-  },
-];
-
+  // Database handles seed projects now
 export default function ProjectsPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -184,12 +117,7 @@ export default function ProjectsPage() {
     fetchConversations();
   }, []);
 
-  // Merge real conversations with seed projects, real ones first
-  const allProjects = [...conversations, ...seedProjects.filter(
-    (seed) => !conversations.some((c) => c.conversation_id === seed.conversation_id)
-  )];
-
-  const filtered = allProjects.filter(
+  const filtered = conversations.filter(
     (c) =>
       (c.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.conversation_id.toLowerCase().includes(searchQuery.toLowerCase())
@@ -352,7 +280,7 @@ export default function ProjectsPage() {
             const msgCount = conv.messages?.length || 0;
             const lastMsg = conv.messages?.[conv.messages.length - 1];
             const preview = lastMsg?.content?.slice(0, 120) || "No messages yet";
-            const isSeed = conv.conversation_id.startsWith("seed-");
+            const isSeed = false; // All are real database entries now
             const gradients = [
               "from-emerald-400 to-teal-600",
               "from-blue-400 to-indigo-600",
@@ -373,7 +301,7 @@ export default function ProjectsPage() {
                 <Link
                   href="/boardroom"
                   onClick={() => {
-                    if (!isSeed) localStorage.setItem('active_conversation_id', conv.conversation_id);
+                    localStorage.setItem('active_conversation_id', conv.conversation_id);
                   }}
                   className="premium-card rounded-xl p-5 flex flex-col gap-3 group block"
                 >
@@ -387,7 +315,7 @@ export default function ProjectsPage() {
                           {conv.title || "Untitled Project"}
                         </h3>
                         <p className="text-[10px] text-on-surface-variant/50 font-mono mt-0.5">
-                          {isSeed ? "Demo Project" : conv.conversation_id.slice(0, 16) + "..."}
+                          {conv.conversation_id.slice(0, 16)}...
                         </p>
                       </div>
                     </div>
