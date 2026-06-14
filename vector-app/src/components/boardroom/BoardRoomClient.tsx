@@ -125,112 +125,74 @@ export function BoardRoomClient() {
     const baseDate = Date.now();
     return [
       {
-        conversation_id: "fake-1",
+        conversation_id: "demo-1",
         title: "Project NexusRed: Zero-Trust Security Arch",
         created_at: new Date(baseDate - 1000 * 60 * 60 * 2).toISOString(),
         messages: [
-          { role: "user", content: "We need a zero-trust architecture for a fintech client." },
-          { role: "assistant", agent: "Prism", content: "Understood. Rallying the team for a Zero-Trust architecture plan." },
-          { role: "assistant", agent: "Nexus", content: "I recommend a mesh architecture using Envoy proxies and mutual TLS for all service-to-service communication." },
-          { role: "assistant", agent: "Ledger", content: "Cost estimate for mTLS overhead on AWS is around $400/mo at our current scale." }
+          { role: "user", content: "We need to design a zero-trust architecture for a new fintech client. They are scaling fast and need to ensure compliance with SOC2 and PCI-DSS." },
+          { role: "assistant", agent: "Prism", content: "Understood. Rallying the team for a Zero-Trust architecture plan that meets strict fintech compliance standards." },
+          { role: "assistant", agent: "Atlas", content: "From a strategic standpoint, this is a great opportunity. Achieving SOC2 and PCI-DSS compliance early will allow this client to onboard enterprise partners much faster. We should highlight compliance as a core feature of their GTM strategy." },
+          { role: "assistant", agent: "Nexus", content: "For the architecture, I recommend a service mesh using Envoy proxies. We need mutual TLS (mTLS) for all service-to-service communication. For identity access management, we should integrate Auth0 with strict role-based access control (RBAC)." },
+          { role: "assistant", agent: "Prism", content: "Nexus, how do you plan to handle the database layer encryption to satisfy PCI-DSS?" },
+          { role: "assistant", agent: "Nexus", content: "We will use PostgreSQL with at-rest encryption via AWS KMS. Additionally, all PII and PAN data will be tokenized before ever hitting the primary database." },
+          { role: "assistant", agent: "Ledger", content: "Cost estimate for mTLS overhead, Auth0 enterprise tiers, and KMS API calls on AWS is around $800/mo at their current scale. This is well within a standard Series A infrastructure budget." },
+          { role: "assistant", agent: "Vanguard", content: "I'll draft a whitepaper on our security-first approach to use as a lead magnet for enterprise sales." }
         ]
       },
       {
-        conversation_id: "fake-2",
-        title: "Aura Health: Predictive ML Wearable",
+        conversation_id: "demo-2",
+        title: "NovaVault: Autonomous Fintech OS",
         created_at: new Date(baseDate - 1000 * 60 * 60 * 24).toISOString(),
         messages: [
-          { role: "user", content: "Design a predictive ML model for wearable health tech." },
-          { role: "assistant", agent: "Prism", content: "Analyzing health tech requirements..." },
-          { role: "assistant", agent: "Atlas", content: "The wearable market is heavily saturated. We need to focus on a specific niche, like predictive cardiovascular event detection." },
-          { role: "assistant", agent: "Vanguard", content: "We can market this to high-performance athletes as a premium tier subscription." }
+          { role: "user", content: "Upgrade the NovaVault AI assistant with context-aware, portfolio-synced financial reasoning." },
+          { role: "assistant", agent: "Prism", content: "Fintech OS upgrade protocols initiated. Connecting Ledger and Nexus for financial routing and backend architecture." },
+          { role: "assistant", agent: "Ledger", content: "To make this commercially viable, we must implement a full-stack Stripe payment architecture. We need subscription management, tiered billing (Free vs Pro), and invoice processing." },
+          { role: "assistant", agent: "Nexus", content: "I'll wire the Stripe webhooks to a secure PostgreSQL backend using Next.js 16 App Router. We'll use Prisma ORM for type-safe database queries. For the AI assistant context, we need to inject the user's live portfolio data into the prompt securely." },
+          { role: "user", content: "How do we ensure the AI doesn't hallucinate financial advice?" },
+          { role: "assistant", agent: "Prism", content: "Great question. We need strict guardrails." },
+          { role: "assistant", agent: "Nexus", content: "We will implement a RAG (Retrieval-Augmented Generation) pipeline. The AI will only be allowed to reference official SEC filings and the user's actual portfolio data. We'll add a system prompt enforcing a 'no financial advice' disclaimer." },
+          { role: "assistant", agent: "Atlas", content: "Perfect. We position the AI as a 'Financial Co-Pilot' rather than an 'Advisor' to avoid regulatory hurdles with the SEC." }
         ]
       },
       {
-        conversation_id: "fake-3",
-        title: "QuantumLedger: HFT Financial Engine",
+        conversation_id: "demo-3",
+        title: "Gengen: Cinematic Identity Platform",
         created_at: new Date(baseDate - 1000 * 60 * 60 * 48).toISOString(),
         messages: [
-          { role: "user", content: "Build an HFT engine in Rust." },
-          { role: "assistant", agent: "Prism", content: "High-Frequency Trading engine requested. Engaging Nexus for systems architecture." },
-          { role: "assistant", agent: "Nexus", content: "Rust is perfect. We'll use io_uring for zero-copy networking to achieve sub-microsecond latency." }
+          { role: "user", content: "Finalize the NEXUS Identity OS by implementing an interactive, login-gated cinematic boot sequence." },
+          { role: "assistant", agent: "Prism", content: "Cinematic sequence design started. This is highly visual, Vanguard should take the lead on aesthetic direction." },
+          { role: "assistant", agent: "Vanguard", content: "The visual aesthetic is crucial here. We need dynamic animations, particle effects, and a hyper-polished dark mode. The boot sequence should feel like terminal hacking meets luxury OS." },
+          { role: "assistant", agent: "Nexus", content: "I'll use Framer Motion for the React animations. We can create a matrix-style terminal text effect using a custom hook. We need to keep the bundle size small though, so no heavy 3D libraries." },
+          { role: "assistant", agent: "Atlas", content: "Make sure we gate the premium features behind a robust authentication layer. The cinematic boot should act as a teaser. Once they are hooked, we hit them with the sign-up wall." },
+          { role: "assistant", agent: "Ledger", content: "If we increase conversion by just 2% with this cinematic onboarding, our Customer Acquisition Cost (CAC) will drop significantly." }
         ]
       },
       {
-        conversation_id: "fake-4",
-        title: "Oasis: Decentralized Compute Grid",
+        conversation_id: "demo-4",
+        title: "QuantumLedger: HFT Financial Engine",
         created_at: new Date(baseDate - 1000 * 60 * 60 * 120).toISOString(),
         messages: [
-          { role: "user", content: "Create a decentralized GPU compute grid." },
-          { role: "assistant", agent: "Prism", content: "Delegating Web3 compute grid analysis..." },
-          { role: "assistant", agent: "Ledger", content: "Tokenomics will require a burn mechanism to maintain deflationary pressure." }
+          { role: "user", content: "Build an HFT (High-Frequency Trading) engine. We need sub-millisecond latency for crypto arbitrage." },
+          { role: "assistant", agent: "Prism", content: "High-Frequency Trading engine requested. Engaging Nexus for deep systems architecture." },
+          { role: "assistant", agent: "Nexus", content: "For sub-millisecond latency, Python or Node.js won't cut it. We must build the core engine in Rust. We'll use io_uring for zero-copy networking to bypass the Linux kernel overhead." },
+          { role: "user", content: "What about connecting to Binance and FTX websockets?" },
+          { role: "assistant", agent: "Nexus", content: "We will maintain persistent WebSocket connections using the `tokio-tungstenite` crate in Rust. We'll also need co-location for our servers—hosting in Tokyo and AWS us-east-1 near the exchange servers." },
+          { role: "assistant", agent: "Ledger", content: "Co-location is expensive. A dedicated bare-metal server near the exchange will cost roughly $2,500/month. We need to ensure the arbitrage spread covers this fixed cost." },
+          { role: "assistant", agent: "Atlas", content: "Let's focus purely on stablecoin triangular arbitrage first. It's lower risk and will let us battle-test the Rust engine before touching volatile assets." }
         ]
       },
       {
-        conversation_id: "fake-5",
-        title: "Echelon: E-Commerce Personalization",
-        created_at: new Date(baseDate - 1000 * 60 * 60 * 160).toISOString(),
-        messages: [
-          { role: "user", content: "We need an AI personalization engine for our Shopify storefronts." },
-          { role: "assistant", agent: "Prism", content: "Initializing e-commerce personalization strategy..." },
-          { role: "assistant", agent: "Atlas", content: "Personalization increases AOV by 15% on average. We should target enterprise Shopify Plus merchants first." },
-          { role: "assistant", agent: "Nexus", content: "We can deploy a real-time recommendation system using Redis and a collaborative filtering model deployed on edge workers." },
-          { role: "assistant", agent: "Vanguard", content: "I'll start drafting case studies demonstrating the ROI for early adopters." }
-        ]
-      },
-      {
-        conversation_id: "fake-6",
-        title: "NovaVault: Autonomous Fintech OS",
-        created_at: new Date(baseDate - 1000 * 60 * 60 * 200).toISOString(),
-        messages: [
-          { role: "user", content: "Upgrade the NovaVault AI assistant with context-aware, portfolio-synced financial reasoning." },
-          { role: "assistant", agent: "Prism", content: "Fintech OS upgrade protocols initiated. Connecting Ledger for financial routing." },
-          { role: "assistant", agent: "Ledger", content: "We must implement a full-stack Stripe payment architecture—including subscription management and invoice processing—to transition to a production-grade SaaS." },
-          { role: "assistant", agent: "Nexus", content: "I'll wire the Stripe webhooks to a secure PostgreSQL backend with Next.js 16 App Router." }
-        ]
-      },
-      {
-        conversation_id: "fake-7",
-        title: "Gengen: Cinematic Identity Platform",
-        created_at: new Date(baseDate - 1000 * 60 * 60 * 280).toISOString(),
-        messages: [
-          { role: "user", content: "Finalize the NEXUS Identity OS by implementing an interactive, login-gated cinematic boot sequence." },
-          { role: "assistant", agent: "Prism", content: "Cinematic sequence design started." },
-          { role: "assistant", agent: "Vanguard", content: "The visual aesthetic is crucial here. We need dynamic animations and a hyper-polished dark mode to wow enterprise clients at first glance." },
-          { role: "assistant", agent: "Atlas", content: "Make sure we gate the premium features behind a robust authentication layer to drive lead generation." }
-        ]
-      },
-      {
-        conversation_id: "fake-8",
-        title: "ShadowForge: Crypto Intelligence",
-        created_at: new Date(baseDate - 1000 * 60 * 60 * 350).toISOString(),
-        messages: [
-          { role: "user", content: "Develop an autonomous cryptographic vulnerability analysis platform for Ethereum." },
-          { role: "assistant", agent: "Prism", content: "ShadowForge project initialized. This requires deep systems-level analysis." },
-          { role: "assistant", agent: "Nexus", content: "I will design an ingestion pipeline using FastAPI and a Python-based analysis engine to perform deep cryptographic diagnostics like nonce reuse detection." },
-          { role: "assistant", agent: "Atlas", content: "We should brand this as an industrial-grade tool for OSPRED Labs. The dashboard needs to reflect high-stakes, real-time risk assessment." }
-        ]
-      },
-      {
-        conversation_id: "fake-9",
+        conversation_id: "demo-5",
         title: "Don't Press The Button: Viral Game",
-        created_at: new Date(baseDate - 1000 * 60 * 60 * 400).toISOString(),
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 160).toISOString(),
         messages: [
           { role: "user", content: "Develop a highly polished, chaotic browser game where an evolving, sentient red button reacts to user interactions." },
           { role: "assistant", agent: "Prism", content: "Viral gaming loop initialized." },
-          { role: "assistant", agent: "Vanguard", content: "This is a brilliant viral marketing play. We need meme-heavy dialogue and unpredictable visual corruption to drive Twitch and YouTube let's-plays." },
-          { role: "assistant", agent: "Nexus", content: "I'll architect a modular React/Vite system with integrated chaos engines and procedural audio to handle the escalating events." }
-        ]
-      },
-      {
-        conversation_id: "fake-10",
-        title: "Unified Secret Scraper CLI",
-        created_at: new Date(baseDate - 1000 * 60 * 60 * 500).toISOString(),
-        messages: [
-          { role: "user", content: "Consolidate multiple disjointed secret-scanning tools (Betterleaks, Gitleaks, TruffleHog) into a single CLI." },
-          { role: "assistant", agent: "Prism", content: "Security tool consolidation started. Nexus, what's the integration plan?" },
-          { role: "assistant", agent: "Nexus", content: "We'll write a unified Python wrapper (`onescraper.py`) that automates environment setup, handles dependency compilation, and provides a cohesive execution environment." },
-          { role: "assistant", agent: "Ledger", content: "This will save our DevSecOps team roughly 40 hours a month in manual scanning overhead." }
+          { role: "assistant", agent: "Vanguard", content: "This is a brilliant viral marketing play. We need meme-heavy dialogue, unpredictable visual corruption, and a sense of escalating panic. It's perfect for Twitch streamers and YouTube let's-plays." },
+          { role: "assistant", agent: "Nexus", content: "I'll architect a modular React/Vite system. We can build a 'Chaos Engine' context provider that dispatches random UI-breaking events. Things like CSS screen-shake, inverted colors, and fake error popups." },
+          { role: "user", content: "Can we add procedural audio? Like a heartbeat that gets faster?" },
+          { role: "assistant", agent: "Nexus", content: "Absolutely. The Web Audio API is perfect for this. We can tie an oscillator's frequency to the user's click count, simulating a rising heartbeat." },
+          { role: "assistant", agent: "Atlas", content: "To monetize, we can add a 'Golden Button' skin that costs $0.99. Microtransactions in viral games have insanely high margins." }
         ]
       }
     ];
@@ -268,7 +230,7 @@ export function BoardRoomClient() {
           setIsProcessing(true);
           setTelemetry(prev => [...prev, `[SYSTEM] Auto-restoring active session ${targetConvId}...`]);
           
-          if (targetConvId.startsWith('fake-')) {
+          if (targetConvId.startsWith('demo-')) {
             const mockConv = getMockConversations().find(c => c.conversation_id === targetConvId);
             if (mockConv && mockConv.messages) {
               setMessages(mockConv.messages.map(m => ({...m, agent: m.agent || (m.role === 'assistant' ? 'Prism' : undefined)})));
@@ -313,7 +275,7 @@ export function BoardRoomClient() {
     setIsProcessing(true);
     addTelemetry(`[SYSTEM] Loading conversation ${convId}...`);
     try {
-      if (convId.startsWith('fake-')) {
+      if (convId.startsWith('demo-')) {
         const mockConv = getMockConversations().find(c => c.conversation_id === convId);
         if (mockConv && mockConv.messages) {
           setMessages(mockConv.messages.map(m => ({...m, agent: m.agent || (m.role === 'assistant' ? 'Prism' : undefined)})));
