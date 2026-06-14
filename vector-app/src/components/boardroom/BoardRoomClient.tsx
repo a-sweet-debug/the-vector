@@ -21,7 +21,11 @@ export function BoardRoomClient() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<ConversationListItem[]>([]);
   const [messages, setMessages] = useState<{role: string, content: string, agent?: string}[]>([
-    { role: "assistant", agent: "Prism", content: "Hey! I'm Prism, your Lead Architect. Ask me anything — or give me a project idea and I'll rally the executive council." }
+    { role: "assistant", agent: "Prism", content: "Hey! I'm Prism, your Lead Architect. I'm connected to the InsForge database and the executive council is online. Give me a project idea and I'll rally the team." },
+    { role: "assistant", agent: "Atlas", content: "Atlas (Strategy) standing by. Ready to analyze market fit, TAM, and business objectives." },
+    { role: "assistant", agent: "Nexus", content: "Nexus (Engineering) online. Cloud infrastructure and system architectures are green. Ready for deployment specs." },
+    { role: "assistant", agent: "Vanguard", content: "Vanguard (Marketing) synced. Go-to-market algorithms and social campaign matrices are loaded." },
+    { role: "assistant", agent: "Ledger", content: "Ledger (Finance) connected. Financial modeling and burn rate parameters are nominal." }
   ]);
   
   // Documents state
@@ -123,13 +127,7 @@ export function BoardRoomClient() {
       const res = await fetch('/api/conversations');
       if (res.ok) {
         const data = await res.json();
-        const fakePastProjects = [
-          { conversation_id: "fake-1", title: "Project NexusRed: Zero-Trust Security Arch", last_updated: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
-          { conversation_id: "fake-2", title: "Aura Health: Predictive ML Wearable", last_updated: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() },
-          { conversation_id: "fake-3", title: "QuantumLedger: HFT Financial Engine", last_updated: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString() },
-          { conversation_id: "fake-4", title: "Oasis: Decentralized Compute Grid", last_updated: new Date(Date.now() - 1000 * 60 * 60 * 120).toISOString() }
-        ];
-        setConversations([...(data.conversations || []), ...fakePastProjects]);
+        setConversations(data.conversations || []);
       }
     } catch (err) {
       console.error("Failed to fetch conversations", err);
@@ -142,13 +140,7 @@ export function BoardRoomClient() {
         const res = await fetch('/api/conversations');
         if (!res.ok) return;
         const data = await res.json();
-        const fakePastProjects = [
-          { conversation_id: "fake-1", title: "Project NexusRed: Zero-Trust Security Arch", last_updated: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
-          { conversation_id: "fake-2", title: "Aura Health: Predictive ML Wearable", last_updated: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() },
-          { conversation_id: "fake-3", title: "QuantumLedger: HFT Financial Engine", last_updated: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString() },
-          { conversation_id: "fake-4", title: "Oasis: Decentralized Compute Grid", last_updated: new Date(Date.now() - 1000 * 60 * 60 * 120).toISOString() }
-        ];
-        const list = [...(data.conversations || []), ...fakePastProjects];
+        const list = data.conversations || [];
         setConversations(list);
         
         // Auto-select based on localStorage first, fallback to list[0]
@@ -229,7 +221,11 @@ export function BoardRoomClient() {
     setDocuments([]);
     setEditingDoc(null);
     setMessages([
-      { role: "assistant", agent: "Prism", content: "Hey! I'm Prism, your Lead Architect. Ask me anything — or give me a project idea and I'll rally the executive council." }
+      { role: "assistant", agent: "Prism", content: "Hey! I'm Prism, your Lead Architect. I'm connected to the InsForge database and the executive council is online. Give me a project idea and I'll rally the team." },
+      { role: "assistant", agent: "Atlas", content: "Atlas (Strategy) standing by. Ready to analyze market fit, TAM, and business objectives." },
+      { role: "assistant", agent: "Nexus", content: "Nexus (Engineering) online. Cloud infrastructure and system architectures are green. Ready for deployment specs." },
+      { role: "assistant", agent: "Vanguard", content: "Vanguard (Marketing) synced. Go-to-market algorithms and social campaign matrices are loaded." },
+      { role: "assistant", agent: "Ledger", content: "Ledger (Finance) connected. Financial modeling and burn rate parameters are nominal." }
     ]);
     addTelemetry("[SYSTEM] Initialized new session.");
   };

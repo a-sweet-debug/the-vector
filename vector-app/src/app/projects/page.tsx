@@ -79,6 +79,56 @@ const activeInitiatives = [
     icon: Target,
     color: "text-rose-500",
     bg: "bg-rose-500/10",
+];
+
+const agentWorkspaces = [
+  {
+    id: "prism",
+    name: "Prism (Lead Architect)",
+    description: "System orchestration and overall architectural design patterns.",
+    icon: Target,
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/10",
+    gradient: "from-emerald-400 to-teal-600",
+    activeTasks: 3,
+    status: "Online",
+    details: "Currently optimizing the event-driven microservices layout."
+  },
+  {
+    id: "atlas",
+    name: "Atlas (CEO / Strategy)",
+    description: "Business model formulation, TAM analysis, and pitch decks.",
+    icon: Activity,
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+    gradient: "from-blue-400 to-indigo-600",
+    activeTasks: 1,
+    status: "Online",
+    details: "Drafting the Series A valuation targets."
+  },
+  {
+    id: "nexus",
+    name: "Nexus (CTO / Engineering)",
+    description: "Technical specifications, database schemas, and API design.",
+    icon: CheckCircle2,
+    color: "text-purple-500",
+    bg: "bg-purple-500/10",
+    gradient: "from-violet-400 to-purple-600",
+    activeTasks: 5,
+    status: "Busy",
+    details: "Reviewing pull requests and scaling the GPU inference cluster."
+  },
+  {
+    id: "vanguard",
+    name: "Vanguard (CMO / Marketing)",
+    description: "Go-to-market strategies, SEO optimization, and viral loops.",
+    icon: Target,
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+    gradient: "from-amber-400 to-orange-600",
+    activeTasks: 2,
+    status: "Online",
+    details: "A/B testing the new freemium tier landing pages."
   }
 ];
 
@@ -266,8 +316,53 @@ export default function ProjectsPage() {
       )}
 
       {/* Agent Workspaces Section */}
-      <div className="mb-6">
-        <h3 className="text-xl font-bold text-on-surface mb-6">Agent Workspaces</h3>
+      {!searchQuery && (
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <h3 className="text-xl font-bold text-on-surface">Agent Workspaces</h3>
+            <span className="bg-surface-container-high text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+              4 Online
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+            {agentWorkspaces.map((agent, idx) => (
+              <motion.div
+                key={agent.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: idx * 0.05 }}
+                className="premium-card rounded-xl p-5 flex flex-col group cursor-default"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.gradient} flex items-center justify-center text-white shadow-lg shrink-0 group-hover:scale-105 transition-transform`}>
+                    <agent.icon className="w-6 h-6" />
+                  </div>
+                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${agent.status === 'Online' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                    {agent.status}
+                  </span>
+                </div>
+                <h4 className="text-base font-bold text-on-surface mb-1">{agent.name}</h4>
+                <p className="text-xs text-on-surface-variant leading-relaxed mb-3">{agent.description}</p>
+                <div className="mt-auto pt-4 border-t border-outline-variant/30">
+                  <p className="text-[10px] text-on-surface-variant/70 italic mb-3 line-clamp-2">"{agent.details}"</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-on-surface-variant">
+                      Active Tasks
+                    </span>
+                    <span className={`text-xs font-bold ${agent.color}`}>
+                      {agent.activeTasks}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Generated Projects Section */}
+      <div className="mb-6 mt-4">
+        <h3 className="text-xl font-bold text-on-surface mb-6">Generated Projects</h3>
       </div>
 
       {loading ? (
