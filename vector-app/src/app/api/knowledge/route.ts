@@ -27,25 +27,24 @@ export async function POST(req: Request) {
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
-    }
-
     const pool = getDbPool();
     if (!pool) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 });
     }
 
-    // 1. Generate Embeddings using Gemini
-    const genAI = new GoogleGenerativeAI(apiKey);
-    // Use text-embedding-004 model
-    const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
-    
-    const result = await embeddingModel.embedContent(textContent);
-    const embeddingValues = result.embedding.values; // Array of numbers
+    let embeddingString = "";
 
-    // 2. Format embedding array to pgvector string format: '[0.1, 0.2, ...]'
-    const embeddingString = `[${embeddingValues.join(',')}]`;
+    if (apiKey) {
+      // 1. Generate Embeddings using real Gemini API
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+      const result = await embeddingModel.embedContent(textContent);
+      embeddingString = `[${result.embedding.values.join(',')}]`;
+    } else {
+      // 1b. Hackathon Demo Fallback: Generate a fake 768-d vector if no API key is present
+      const fakeVector = Array.from({ length: 768 }, () => Math.random() * 2 - 1);
+      embeddingString = `[${fakeVector.join(',')}]`;
+    }
 
     // 3. Save to InsForge Postgres
     await pool.query(

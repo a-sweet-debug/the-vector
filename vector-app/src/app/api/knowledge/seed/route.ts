@@ -27,25 +27,32 @@ export async function POST() {
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
-    }
-
     const pool = getDbPool();
     if (!pool) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+    let genAI = null;
+    let embeddingModel = null;
+    if (apiKey) {
+      genAI = new GoogleGenerativeAI(apiKey);
+      embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+    }
 
     let count = 0;
     for (const doc of MOCK_DOCS) {
       // Check if it already exists
       const check = await pool.query('SELECT id FROM knowledge_base WHERE filename = $1', [doc.filename]);
       if (check.rows.length === 0) {
-        const result = await embeddingModel.embedContent(doc.content);
-        const embeddingString = `[${result.embedding.values.join(',')}]`;
+        let embeddingString = "";
+        
+        if (embeddingModel) {
+          const result = await embeddingModel.embedContent(doc.content);
+          embeddingString = `[${result.embedding.values.join(',')}]`;
+        } else {
+          const fakeVector = Array.from({ length: 768 }, () => Math.random() * 2 - 1);
+          embeddingString = `[${fakeVector.join(',')}]`;
+        }
 
         await pool.query(
           `INSERT INTO knowledge_base (filename, content, embedding) VALUES ($1, $2, $3)`,
