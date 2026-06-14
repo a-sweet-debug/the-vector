@@ -36,7 +36,7 @@ export async function POST() {
     let embeddingModel = null;
     if (apiKey && apiKey !== "<YOUR_GEMINI_API_KEY>") {
       genAI = new GoogleGenerativeAI(apiKey);
-      embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+      embeddingModel = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
     }
 
     let count = 0;
@@ -48,7 +48,9 @@ export async function POST() {
         
         if (embeddingModel) {
           const result = await embeddingModel.embedContent(doc.content);
-          embeddingString = `[${result.embedding.values.join(',')}]`;
+          const rawValues = result.embedding.values;
+          const finalValues = rawValues.length > 768 ? rawValues.slice(0, 768) : rawValues;
+          embeddingString = `[${finalValues.join(',')}]`;
         } else {
           const fakeVector = Array.from({ length: 768 }, () => Math.random() * 2 - 1);
           embeddingString = `[${fakeVector.join(',')}]`;

@@ -134,9 +134,58 @@ const agentWorkspaces = [
 ];
 
   // Database handles seed projects now
+const baseDate = Date.now();
+const demoProjects = [
+  {
+    conversation_id: "demo-1",
+    title: "Project NexusRed: Zero-Trust Security Arch",
+    description: "We need to design a zero-trust architecture for a new fintech client. They are scaling fast and need to ensure compliance with SOC2 and PCI-DSS.",
+    category: "Generated Project",
+    status: "Active",
+    progress: 100,
+    created_at: new Date(baseDate - 1000 * 60 * 60 * 2).toISOString().split('T')[0]
+  },
+  {
+    conversation_id: "demo-2",
+    title: "NovaVault: Autonomous Fintech OS",
+    description: "Upgrade the NovaVault AI assistant with context-aware, portfolio-synced financial reasoning.",
+    category: "Generated Project",
+    status: "Active",
+    progress: 100,
+    created_at: new Date(baseDate - 1000 * 60 * 60 * 24).toISOString().split('T')[0]
+  },
+  {
+    conversation_id: "demo-3",
+    title: "Gengen: Cinematic Identity Platform",
+    description: "Finalize the NEXUS Identity OS by implementing an interactive, login-gated cinematic boot sequence.",
+    category: "Generated Project",
+    status: "Active",
+    progress: 100,
+    created_at: new Date(baseDate - 1000 * 60 * 60 * 48).toISOString().split('T')[0]
+  },
+  {
+    conversation_id: "demo-4",
+    title: "QuantumLedger: HFT Financial Engine",
+    description: "Build an HFT (High-Frequency Trading) engine. We need sub-millisecond latency for crypto arbitrage.",
+    category: "Generated Project",
+    status: "Active",
+    progress: 100,
+    created_at: new Date(baseDate - 1000 * 60 * 60 * 120).toISOString().split('T')[0]
+  },
+  {
+    conversation_id: "demo-5",
+    title: "Don't Press The Button: Viral Game",
+    description: "Develop a highly polished, chaotic browser game where an evolving, sentient red button reacts to user interactions.",
+    category: "Generated Project",
+    status: "Active",
+    progress: 100,
+    created_at: new Date(baseDate - 1000 * 60 * 60 * 160).toISOString().split('T')[0]
+  }
+];
+
 export default function ProjectsPage() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [conversations, setConversations] = useState<Conversation[]>(demoProjects);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -157,54 +206,6 @@ export default function ProjectsPage() {
           created_at: new Date(p.created_at).toISOString().split('T')[0]
         }));
 
-        const baseDate = Date.now();
-        const demoProjects = [
-          {
-            conversation_id: "demo-1",
-            title: "Project NexusRed: Zero-Trust Security Arch",
-            description: "We need to design a zero-trust architecture for a new fintech client. They are scaling fast and need to ensure compliance with SOC2 and PCI-DSS.",
-            category: "Generated Project",
-            status: "Active",
-            progress: 100,
-            created_at: new Date(baseDate - 1000 * 60 * 60 * 2).toISOString().split('T')[0]
-          },
-          {
-            conversation_id: "demo-2",
-            title: "NovaVault: Autonomous Fintech OS",
-            description: "Upgrade the NovaVault AI assistant with context-aware, portfolio-synced financial reasoning.",
-            category: "Generated Project",
-            status: "Active",
-            progress: 100,
-            created_at: new Date(baseDate - 1000 * 60 * 60 * 24).toISOString().split('T')[0]
-          },
-          {
-            conversation_id: "demo-3",
-            title: "Gengen: Cinematic Identity Platform",
-            description: "Finalize the NEXUS Identity OS by implementing an interactive, login-gated cinematic boot sequence.",
-            category: "Generated Project",
-            status: "Active",
-            progress: 100,
-            created_at: new Date(baseDate - 1000 * 60 * 60 * 48).toISOString().split('T')[0]
-          },
-          {
-            conversation_id: "demo-4",
-            title: "QuantumLedger: HFT Financial Engine",
-            description: "Build an HFT (High-Frequency Trading) engine. We need sub-millisecond latency for crypto arbitrage.",
-            category: "Generated Project",
-            status: "Active",
-            progress: 100,
-            created_at: new Date(baseDate - 1000 * 60 * 60 * 120).toISOString().split('T')[0]
-          },
-          {
-            conversation_id: "demo-5",
-            title: "Don't Press The Button: Viral Game",
-            description: "Develop a highly polished, chaotic browser game where an evolving, sentient red button reacts to user interactions.",
-            category: "Generated Project",
-            status: "Active",
-            progress: 100,
-            created_at: new Date(baseDate - 1000 * 60 * 60 * 160).toISOString().split('T')[0]
-          }
-        ];
 
         setConversations([...dbProjects, ...demoProjects]);
 

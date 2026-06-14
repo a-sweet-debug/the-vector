@@ -37,9 +37,11 @@ export async function POST(req: Request) {
     if (apiKey && apiKey !== "<YOUR_GEMINI_API_KEY>") {
       // 1. Generate Embeddings using real Gemini API
       const genAI = new GoogleGenerativeAI(apiKey);
-      const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+      const embeddingModel = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
       const result = await embeddingModel.embedContent(textContent);
-      embeddingString = `[${result.embedding.values.join(',')}]`;
+      const rawValues = result.embedding.values;
+      const finalValues = rawValues.length > 768 ? rawValues.slice(0, 768) : rawValues;
+      embeddingString = `[${finalValues.join(',')}]`;
     } else {
       // 1b. Hackathon Demo Fallback: Generate a fake 768-d vector if no API key is present
       const fakeVector = Array.from({ length: 768 }, () => Math.random() * 2 - 1);
