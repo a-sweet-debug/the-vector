@@ -165,6 +165,73 @@ export function BoardRoomClient() {
           { role: "assistant", agent: "Prism", content: "Delegating Web3 compute grid analysis..." },
           { role: "assistant", agent: "Ledger", content: "Tokenomics will require a burn mechanism to maintain deflationary pressure." }
         ]
+      },
+      {
+        conversation_id: "fake-5",
+        title: "Echelon: E-Commerce Personalization",
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 160).toISOString(),
+        messages: [
+          { role: "user", content: "We need an AI personalization engine for our Shopify storefronts." },
+          { role: "assistant", agent: "Prism", content: "Initializing e-commerce personalization strategy..." },
+          { role: "assistant", agent: "Atlas", content: "Personalization increases AOV by 15% on average. We should target enterprise Shopify Plus merchants first." },
+          { role: "assistant", agent: "Nexus", content: "We can deploy a real-time recommendation system using Redis and a collaborative filtering model deployed on edge workers." },
+          { role: "assistant", agent: "Vanguard", content: "I'll start drafting case studies demonstrating the ROI for early adopters." }
+        ]
+      },
+      {
+        conversation_id: "fake-6",
+        title: "NovaVault: Autonomous Fintech OS",
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 200).toISOString(),
+        messages: [
+          { role: "user", content: "Upgrade the NovaVault AI assistant with context-aware, portfolio-synced financial reasoning." },
+          { role: "assistant", agent: "Prism", content: "Fintech OS upgrade protocols initiated. Connecting Ledger for financial routing." },
+          { role: "assistant", agent: "Ledger", content: "We must implement a full-stack Stripe payment architecture—including subscription management and invoice processing—to transition to a production-grade SaaS." },
+          { role: "assistant", agent: "Nexus", content: "I'll wire the Stripe webhooks to a secure PostgreSQL backend with Next.js 16 App Router." }
+        ]
+      },
+      {
+        conversation_id: "fake-7",
+        title: "Gengen: Cinematic Identity Platform",
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 280).toISOString(),
+        messages: [
+          { role: "user", content: "Finalize the NEXUS Identity OS by implementing an interactive, login-gated cinematic boot sequence." },
+          { role: "assistant", agent: "Prism", content: "Cinematic sequence design started." },
+          { role: "assistant", agent: "Vanguard", content: "The visual aesthetic is crucial here. We need dynamic animations and a hyper-polished dark mode to wow enterprise clients at first glance." },
+          { role: "assistant", agent: "Atlas", content: "Make sure we gate the premium features behind a robust authentication layer to drive lead generation." }
+        ]
+      },
+      {
+        conversation_id: "fake-8",
+        title: "ShadowForge: Crypto Intelligence",
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 350).toISOString(),
+        messages: [
+          { role: "user", content: "Develop an autonomous cryptographic vulnerability analysis platform for Ethereum." },
+          { role: "assistant", agent: "Prism", content: "ShadowForge project initialized. This requires deep systems-level analysis." },
+          { role: "assistant", agent: "Nexus", content: "I will design an ingestion pipeline using FastAPI and a Python-based analysis engine to perform deep cryptographic diagnostics like nonce reuse detection." },
+          { role: "assistant", agent: "Atlas", content: "We should brand this as an industrial-grade tool for OSPRED Labs. The dashboard needs to reflect high-stakes, real-time risk assessment." }
+        ]
+      },
+      {
+        conversation_id: "fake-9",
+        title: "Don't Press The Button: Viral Game",
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 400).toISOString(),
+        messages: [
+          { role: "user", content: "Develop a highly polished, chaotic browser game where an evolving, sentient red button reacts to user interactions." },
+          { role: "assistant", agent: "Prism", content: "Viral gaming loop initialized." },
+          { role: "assistant", agent: "Vanguard", content: "This is a brilliant viral marketing play. We need meme-heavy dialogue and unpredictable visual corruption to drive Twitch and YouTube let's-plays." },
+          { role: "assistant", agent: "Nexus", content: "I'll architect a modular React/Vite system with integrated chaos engines and procedural audio to handle the escalating events." }
+        ]
+      },
+      {
+        conversation_id: "fake-10",
+        title: "Unified Secret Scraper CLI",
+        created_at: new Date(baseDate - 1000 * 60 * 60 * 500).toISOString(),
+        messages: [
+          { role: "user", content: "Consolidate multiple disjointed secret-scanning tools (Betterleaks, Gitleaks, TruffleHog) into a single CLI." },
+          { role: "assistant", agent: "Prism", content: "Security tool consolidation started. Nexus, what's the integration plan?" },
+          { role: "assistant", agent: "Nexus", content: "We'll write a unified Python wrapper (`onescraper.py`) that automates environment setup, handles dependency compilation, and provides a cohesive execution environment." },
+          { role: "assistant", agent: "Ledger", content: "This will save our DevSecOps team roughly 40 hours a month in manual scanning overhead." }
+        ]
       }
     ];
   };
