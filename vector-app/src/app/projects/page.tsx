@@ -148,17 +148,66 @@ export default function ProjectsPage() {
         
         // Map InsForge DB projects to the UI format
         const dbProjects = (data.projects || []).map((p: any) => ({
-          conversation_id: `db-${p.id}`,
-          title: p.title || "Generated Plan",
-          created_at: p.created_at,
-          messages: [
-            { role: "user", content: p.description },
-            { role: "assistant", content: p.summary_markdown || "Project details..." }
-          ],
-          documents_count: 4,
+          id: `db-${p.id}`,
+          name: p.title,
+          description: p.description || "Auto-generated project from conversation.",
+          category: "Generated Project",
+          status: p.status || "Active",
+          progress: 100,
+          date: new Date(p.created_at).toISOString().split('T')[0]
         }));
-        
-        setConversations(dbProjects);
+
+        const baseDate = Date.now();
+        const demoProjects = [
+          {
+            id: "demo-1",
+            name: "Project NexusRed: Zero-Trust Security Arch",
+            description: "We need to design a zero-trust architecture for a new fintech client. They are scaling fast and need to ensure compliance with SOC2 and PCI-DSS.",
+            category: "Generated Project",
+            status: "Active",
+            progress: 100,
+            date: new Date(baseDate - 1000 * 60 * 60 * 2).toISOString().split('T')[0]
+          },
+          {
+            id: "demo-2",
+            name: "NovaVault: Autonomous Fintech OS",
+            description: "Upgrade the NovaVault AI assistant with context-aware, portfolio-synced financial reasoning.",
+            category: "Generated Project",
+            status: "Active",
+            progress: 100,
+            date: new Date(baseDate - 1000 * 60 * 60 * 24).toISOString().split('T')[0]
+          },
+          {
+            id: "demo-3",
+            name: "Gengen: Cinematic Identity Platform",
+            description: "Finalize the NEXUS Identity OS by implementing an interactive, login-gated cinematic boot sequence.",
+            category: "Generated Project",
+            status: "Active",
+            progress: 100,
+            date: new Date(baseDate - 1000 * 60 * 60 * 48).toISOString().split('T')[0]
+          },
+          {
+            id: "demo-4",
+            name: "QuantumLedger: HFT Financial Engine",
+            description: "Build an HFT (High-Frequency Trading) engine. We need sub-millisecond latency for crypto arbitrage.",
+            category: "Generated Project",
+            status: "Active",
+            progress: 100,
+            date: new Date(baseDate - 1000 * 60 * 60 * 120).toISOString().split('T')[0]
+          },
+          {
+            id: "demo-5",
+            name: "Don't Press The Button: Viral Game",
+            description: "Develop a highly polished, chaotic browser game where an evolving, sentient red button reacts to user interactions.",
+            category: "Generated Project",
+            status: "Active",
+            progress: 100,
+            date: new Date(baseDate - 1000 * 60 * 60 * 160).toISOString().split('T')[0]
+          }
+        ];
+
+        setConversations([...dbProjects, ...demoProjects]);
+
       } catch (err) {
         console.error("Error fetching InsForge projects:", err);
       } finally {

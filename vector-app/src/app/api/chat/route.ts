@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       dbInitialized = true;
     }
 
-    const { message, history } = await req.json();
+    const { message, history, conversation_id } = await req.json();
 
     if (!message) {
       return NextResponse.json({ error: "Missing message" }, { status: 400 });
@@ -149,31 +149,64 @@ export async function POST(req: Request) {
     parsed.tasks = parsed.tasks || [];
 
     // --- INSFORGE DATABASE INTEGRATION ---
-    if (parsed.mode === "plan" && parsed.documents.length > 0) {
-      try {
-        const pool = getDbPool();
-        if (pool) {
-          const title = message.length > 50 ? message.substring(0, 47) + "..." : message;
-          const atlasDoc = parsed.documents.find((d: any) => d.agent === 'Atlas')?.content || '';
-          const nexusDoc = parsed.documents.find((d: any) => d.agent === 'Nexus')?.content || '';
-          const vanguardDoc = parsed.documents.find((d: any) => d.agent === 'Vanguard')?.content || '';
-          const ledgerDoc = parsed.documents.find((d: any) => d.agent === 'Ledger')?.content || '';
+    try {
+      const pool = getDbPool();
+      if (pool) {
+        const updatedHistory = [
+          ...(history || []).map((m: any) => ({ role: m.role, content: m.content })),
+          { role: "user", content: message },
+          { role: "assistant", content: parsed.message || "Working on it..." }
+        ];
 
+        if (conversation_id && conversation_id.startsWith('db-')) {
+          const numericId = conversation_id.replace('db-', '');
+          
+          let updateQuery = `UPDATE projects SET chat_history = $1`;
+          let values: any[] = [JSON.stringify(updatedHistory)];
+          
+          if (parsed.mode === "plan" && parsed.documents.length > 0) {
+            const atlasDoc = parsed.documents.find((d: any) => d.agent === 'Atlas')?.content || '';
+            const nexusDoc = parsed.documents.find((d: any) => d.agent === 'Nexus')?.content || '';
+            const vanguardDoc = parsed.documents.find((d: any) => d.agent === 'Vanguard')?.content || '';
+            const ledgerDoc = parsed.documents.find((d: any) => d.agent === 'Ledger')?.content || '';
+            
+            updateQuery += `, summary_markdown = $2, architecture_markdown = $3, marketing_markdown = $4, finance_markdown = $5`;
+            values.push(atlasDoc, nexusDoc, vanguardDoc, ledgerDoc);
+            updateQuery += ` WHERE id = $6`;
+            values.push(numericId);
+          } else {
+            updateQuery += ` WHERE id = $2`;
+            values.push(numericId);
+          }
+
+          await pool.query(updateQuery, values);
+          parsed.conversation_id = conversation_id;
+          console.log("✅ Project updated in InsForge DB:", parsed.conversation_id);
+        } else {
+          // INSERT NEW PROJECT
+          let title = message.length > 50 ? message.substring(0, 47) + "..." : message;
+          let atlasDoc = '', nexusDoc = '', vanguardDoc = '', ledgerDoc = '';
+          if (parsed.mode === "plan" && parsed.documents.length > 0) {
+            atlasDoc = parsed.documents.find((d: any) => d.agent === 'Atlas')?.content || '';
+            nexusDoc = parsed.documents.find((d: any) => d.agent === 'Nexus')?.content || '';
+            vanguardDoc = parsed.documents.find((d: any) => d.agent === 'Vanguard')?.content || '';
+            ledgerDoc = parsed.documents.find((d: any) => d.agent === 'Ledger')?.content || '';
+          }
+          
           const dbResult = await pool.query(
-            `INSERT INTO projects (title, description, summary_markdown, architecture_markdown, marketing_markdown, finance_markdown)
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-            [title, message, atlasDoc, nexusDoc, vanguardDoc, ledgerDoc]
+            `INSERT INTO projects (title, description, summary_markdown, architecture_markdown, marketing_markdown, finance_markdown, chat_history)
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+            [title, message, atlasDoc, nexusDoc, vanguardDoc, ledgerDoc, JSON.stringify(updatedHistory)]
           );
           
           if (dbResult.rows.length > 0) {
             parsed.conversation_id = `db-${dbResult.rows[0].id}`;
-            console.log("✅ Project successfully saved to InsForge DB with ID:", parsed.conversation_id);
+            console.log("✅ New Project saved to InsForge DB with ID:", parsed.conversation_id);
           }
         }
-      } catch (dbError) {
-        console.error("❌ Failed to save project to InsForge DB:", dbError);
-        // We do not throw here! The user should still get their UI response even if DB fails.
       }
+    } catch (dbError) {
+      console.error("❌ Failed to save project to InsForge DB:", dbError);
     }
 
     return NextResponse.json(parsed);

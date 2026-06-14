@@ -333,6 +333,56 @@ export function BoardRoomClient() {
     addTelemetry("[SYSTEM] Initialized new session.");
   };
 
+  const handleRenameConversation = async (convId: string, currentTitle: string) => {
+    const newTitle = prompt("Enter new title for conversation:", currentTitle);
+    if (!newTitle || newTitle === currentTitle) return;
+
+    try {
+      if (convId.startsWith('demo-')) {
+        setConversations(prev => prev.map(c => c.conversation_id === convId ? { ...c, title: newTitle } : c));
+        return;
+      }
+      const res = await fetch(`/api/conversations/${convId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle })
+      });
+      if (res.ok) {
+        fetchConversations();
+      }
+    } catch (err) {
+      console.error("Failed to rename conversation:", err);
+    }
+  };
+
+  const handleDeleteConversation = async (convId: string) => {
+    if (!confirm("Are you sure you want to delete this conversation?")) return;
+
+    try {
+      if (convId.startsWith('demo-')) {
+        setConversations(prev => prev.filter(c => c.conversation_id !== convId));
+        if (conversationId === convId) handleNewSession();
+        return;
+      }
+      
+      const numericId = convId.replace('db-', '');
+      const res = await fetch(`/api/projects/${numericId}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        if (conversationId === convId) {
+          handleNewSession();
+        }
+        fetchConversations();
+      } else {
+        const errorData = await res.json();
+        alert(`Failed to delete: ${errorData.error}`);
+      }
+    } catch (err) {
+      console.error("Failed to delete conversation:", err);
+    }
+  };
+
   const handleSend = async (userIdea: string) => {
     setIsProcessing(true);
     setCeoState("Idle");
@@ -355,7 +405,7 @@ export function BoardRoomClient() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userIdea, history: recentHistory }),
+        body: JSON.stringify({ message: userIdea, history: recentHistory, conversation_id: conversationId }),
       });
 
       if (!res.ok) {
@@ -547,26 +597,42 @@ export function BoardRoomClient() {
                 const firstMsg = conv.messages?.[0]?.content || "No message";
                 const isSelected = conv.conversation_id === conversationId;
                 return (
-                  <button
-                    key={conv.conversation_id}
-                    onClick={() => handleSelectConversation(conv.conversation_id)}
-                    disabled={isProcessing}
-                    className={`w-full text-left p-2.5 rounded-lg border text-[11px] transition-all flex flex-col gap-1 ${
-                      isSelected 
-                        ? 'border-emerald-500 bg-emerald-500/5 text-on-surface' 
-                        : 'border-outline-variant hover:border-on-surface-variant/30 text-on-surface-variant'
-                    }`}
-                  >
-                    <span className="font-semibold text-[11px] truncate block text-emerald-400">
-                      {displayName}
-                    </span>
-                    <span className="truncate font-mono text-[9px] opacity-65 block">
-                      {conv.conversation_id}
-                    </span>
-                    <span className="truncate text-on-surface-variant/75 text-[10px] block">
-                      {firstMsg}
-                    </span>
-                  </button>
+                  <div key={conv.conversation_id} className="relative group">
+                    <button
+                      onClick={() => handleSelectConversation(conv.conversation_id)}
+                      disabled={isProcessing}
+                      className={`w-full text-left p-2.5 rounded-lg border text-[11px] transition-all flex flex-col gap-1 pr-16 ${
+                        isSelected 
+                          ? 'border-emerald-500 bg-emerald-500/5 text-on-surface' 
+                          : 'border-outline-variant hover:border-on-surface-variant/30 text-on-surface-variant'
+                      }`}
+                    >
+                      <span className="font-semibold text-[11px] truncate block text-emerald-400">
+                        {displayName}
+                      </span>
+                      <span className="truncate text-on-surface-variant/75 text-[10px] block">
+                        {firstMsg}
+                      </span>
+                    </button>
+                    
+                    {/* Action buttons (hidden by default, show on group hover) */}
+                    <div className="absolute right-2 top-2 hidden group-hover:flex items-center gap-1 bg-surface-container-low rounded-md px-1 py-0.5 shadow-sm border border-outline-variant">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleRenameConversation(conv.conversation_id, displayName); }}
+                        className="p-1 text-on-surface-variant hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors"
+                        title="Rename"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteConversation(conv.conversation_id); }}
+                        className="p-1 text-on-surface-variant hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors"
+                        title="Delete"
+                      >
+                        <Trash className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
                 );
               })
             )}
