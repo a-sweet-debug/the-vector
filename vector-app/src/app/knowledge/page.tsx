@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Database, Shield, Cpu, Save, UploadCloud, FileText, Search, Loader2 } from "lucide-react";
+import { Database, Shield, Cpu, Save, UploadCloud, FileText, Search, Loader2, Eye, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function KnowledgeBasePage() {
   const [uploading, setUploading] = useState(false);
-  const [files, setFiles] = useState<{id: number, filename: string, created_at: string}[]>([]);
+  const [files, setFiles] = useState<{id: number, filename: string, created_at: string, content?: string}[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [seeding, setSeeding] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<typeof files[0] | null>(null);
 
   useEffect(() => {
     fetch("/api/knowledge")
@@ -198,10 +199,17 @@ export default function KnowledgeBasePage() {
                             {new Date(file.created_at).toLocaleDateString()}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-4 text-right flex items-center justify-end gap-3">
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
                             <Cpu className="w-3 h-3" /> Indexed
                           </span>
+                          <button
+                            onClick={() => setSelectedFile(file)}
+                            className="p-1.5 text-on-surface-variant/50 hover:text-indigo-500 hover:bg-indigo-500/10 rounded-md transition-colors"
+                            title="View Content"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -213,6 +221,57 @@ export default function KnowledgeBasePage() {
         </div>
 
       </div>
+
+      {/* Document View Modal */}
+      {selectedFile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-background/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-surface border border-outline-variant rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
+          >
+            <div className="flex items-center justify-between p-6 border-b border-outline-variant bg-surface-container-lowest">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-on-surface leading-none">{selectedFile.filename}</h3>
+                  <p className="text-xs text-on-surface-variant mt-1.5">
+                    Indexed on {new Date(selectedFile.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedFile(null)}
+                className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto bg-surface flex-1">
+              {selectedFile.content ? (
+                <div className="whitespace-pre-wrap text-sm text-on-surface-variant font-mono bg-surface-container-lowest border border-outline-variant/50 p-6 rounded-xl leading-relaxed">
+                  {selectedFile.content}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-40 text-on-surface-variant/50">
+                  <Database className="w-8 h-8 mb-3 opacity-50" />
+                  <p>Content is vectorized and not available in plaintext.</p>
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t border-outline-variant bg-surface-container-lowest flex justify-end">
+              <button
+                onClick={() => setSelectedFile(null)}
+                className="px-5 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold rounded-lg transition-colors text-sm border border-outline-variant"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

@@ -72,11 +72,36 @@ export async function POST(req: Request) {
 export async function GET() {
   const baseDate = Date.now();
   const mockFiles = [
-    { id: 1, filename: "NexusRed_Zero_Trust_Architecture.md", created_at: new Date(baseDate - 100000000).toISOString() },
-    { id: 2, filename: "NovaVault_Financial_Reasoning_Specs.pdf", created_at: new Date(baseDate - 80000000).toISOString() },
-    { id: 3, filename: "Gengen_Cinematic_Boot_Sequence.txt", created_at: new Date(baseDate - 60000000).toISOString() },
-    { id: 4, filename: "QuantumLedger_HFT_Engine_Notes.md", created_at: new Date(baseDate - 40000000).toISOString() },
-    { id: 5, filename: "Button_Viral_Game_Mechanics.csv", created_at: new Date(baseDate - 20000000).toISOString() }
+    { 
+      id: 1, 
+      filename: "NexusRed_Zero_Trust_Architecture.md", 
+      content: "# NexusRed Zero-Trust Architecture\n\n## 1. Gateway Security\nAll incoming requests must pass through the Edge Gateway. We are enforcing strict mTLS (Mutual TLS) and verifying the device posture.\n\n## 2. Authentication\nOAuth2 with mandatory hardware security keys (FIDO2). Tokens expire every 15 minutes.\n\n## 3. Database Encryption\nData is encrypted at rest using AES-256-GCM. We use Google Cloud KMS for key rotation.",
+      created_at: new Date(baseDate - 100000000).toISOString() 
+    },
+    { 
+      id: 2, 
+      filename: "NovaVault_Financial_Reasoning_Specs.pdf", 
+      content: "NOVA_VAULT FINANCIAL REASONING ENGINE SPECS\n\n- Model: Gemini 1.5 Pro for massive context window analysis.\n- Input: Real-time SEC EDGAR filings (10-K, 10-Q) + Live Yahoo Finance data streams.\n- Reasoning Logic: Cross-reference user's local portfolio (via Plaid API) with macro-economic indicators.\n- Guardrails: The AI must never execute a trade autonomously without explicit 2FA user confirmation.",
+      created_at: new Date(baseDate - 80000000).toISOString() 
+    },
+    { 
+      id: 3, 
+      filename: "Gengen_Cinematic_Boot_Sequence.txt", 
+      content: "[INITIATING BOOT SEQUENCE]\nLOADING NEXUS OS...\nMounting encrypted partitions... OK\nEstablishing secure uplink... OK\n\nDesign notes: The boot sequence must feel tactile. Use Framer Motion for the glitch effect on the logo. The user must type 'ACCESS' into the terminal to bypass the login gate. Audio should include a low-frequency hum.",
+      created_at: new Date(baseDate - 60000000).toISOString() 
+    },
+    { 
+      id: 4, 
+      filename: "QuantumLedger_HFT_Engine_Notes.md", 
+      content: "# QuantumLedger High-Frequency Trading Engine\n\n## Latency Requirements\n- Target: < 500 microseconds (tick-to-trade).\n- Implementation: Bare-metal Rust. No garbage collection.\n- Networking: Solarflare NICs with kernel-bypass (OpenOnload).\n\n## Arbitrage Strategy\nFocus strictly on triangular arbitrage between stablecoins (USDT/USDC/DAI) across Binance and OKX.",
+      created_at: new Date(baseDate - 40000000).toISOString() 
+    },
+    { 
+      id: 5, 
+      filename: "Button_Viral_Game_Mechanics.csv", 
+      content: "Level,Interaction,Event_Trigger,Audio_File\n1,Click,Button gets slightly smaller,pop.wav\n2,Click,Screen shakes,rumble.mp3\n3,Hover,Button runs away from cursor,slide.wav\n4,Click,Button spawns 10 fake buttons,glitch.wav\n5,Wait 10s,Button whispers 'please don't',whisper.mp3\n6,Click,Browser tab attempts to close,scream.wav",
+      created_at: new Date(baseDate - 20000000).toISOString() 
+    }
   ];
 
   try {
@@ -88,9 +113,9 @@ export async function GET() {
     const pool = getDbPool();
     if (!pool) return NextResponse.json({ files: mockFiles });
 
-    // Don't select the heavy vector/content, just the metadata
+    // Select the content along with metadata
     const result = await pool.query(
-      `SELECT id, filename, created_at FROM knowledge_base ORDER BY created_at DESC LIMIT 10`
+      `SELECT id, filename, content, created_at FROM knowledge_base ORDER BY created_at DESC LIMIT 10`
     );
 
     if (result.rows.length === 0) {
