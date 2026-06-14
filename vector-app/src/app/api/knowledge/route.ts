@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
     let embeddingString = "";
 
-    if (apiKey) {
+    if (apiKey && apiKey !== "<YOUR_GEMINI_API_KEY>") {
       // 1. Generate Embeddings using real Gemini API
       const genAI = new GoogleGenerativeAI(apiKey);
       const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });

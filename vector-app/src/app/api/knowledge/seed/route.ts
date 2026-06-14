@@ -34,7 +34,7 @@ export async function POST() {
 
     let genAI = null;
     let embeddingModel = null;
-    if (apiKey) {
+    if (apiKey && apiKey !== "<YOUR_GEMINI_API_KEY>") {
       genAI = new GoogleGenerativeAI(apiKey);
       embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
     }
